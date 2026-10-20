@@ -1,0 +1,12 @@
+/* inner pages: dark theme mapped onto the original class names (pages also load k.css + k.js) */
+:root{--paper:#04050a;--paper2:#090b12;--card:rgba(14,17,27,.78);--ink:#f4f1ea;--ink2:#a3a097;--ink3:#6b6a66;--rule:rgba(244,241,234,.09);--rule2:rgba(244,241,234,.16);--red:#ffc35a;--red2:#ff8a3d;--gold:#ffc35a}
+body{background:var(--paper);background-image:radial-gradient(rgba(244,241,234,.035) 1px,transparent 1px);background-size:26px 26px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}main{padding-top:80px}
+.serif{font-family:'Geist';font-weight:800;letter-spacing:-.045em}.mono{font-family:'Geist Mono',monospace}
+.it{font-style:normal}.red,.it.red{background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}.mu{color:var(--ink2)}.dim{color:var(--ink3)}
+.eyebrow{font-family:'Geist Mono';font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3)}.eyebrow b{color:var(--gold);font-weight:500}
+.plate{background:var(--card);border:1px solid var(--rule2);border-radius:16px}
+.fig{font-family:'Geist Mono';font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.btn.ink{background:var(--g);color:#140b00;border:0}.btn.red{background:var(--g);color:#140b00;border:0}
+.copy{display:inline-flex;align-items:center;gap:10px;font-family:'Geist Mono';font-size:13px;border:1px solid var(--rule2);background:var(--card);padding:8px 12px;cursor:pointer;border-radius:10px}
+@media(max-width:900px){.wrap{padding:0 18px}main{padding-top:84px}}

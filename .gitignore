@@ -1,0 +1,3 @@
+node_modules/
+_studio/frames-*/
+_studio/src/*.html

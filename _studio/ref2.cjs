@@ -1,0 +1,7 @@
+const fs = require('fs'); const { open, sleep } = require('./cdp.cjs'); const [, , URL, DIR] = process.argv;
+(async () => { const c = await open('about:blank', 1440, 900, 9812); await c.send('Page.navigate', { url: URL }); await sleep(7000);
+  let info = await c.ev(`(()=>{const b=[...document.querySelectorAll('button,a')].filter(e=>/next/i.test((e.textContent||"")));return JSON.stringify({next:b.map(e=>e.outerHTML.slice(0,200)),slides:document.querySelectorAll('section').length,secs:[...document.querySelectorAll('section')].map(s=>(s.id||'')+' :: '+(s.innerText||"").slice(0,260).replace(/\n/g,' | '))})})()`);
+  fs.writeFileSync(DIR + '/slides.json', info);
+  for (let i = 1; i < 16; i++) { const ok = await c.ev(`(()=>{const b=[...document.querySelectorAll('button,a')].find(e=>/^\s*next\s*$/i.test((e.textContent||"")));if(b){b.click();return 1}return 0})()`); if (!ok) break; await sleep(2600); await c.shot(`${DIR}/s${String(i).padStart(2, '0')}.jpg`, 'jpeg'); }
+  fs.writeFileSync(DIR + '/meta.json', await c.ev(`JSON.stringify({fonts:[...new Set([...document.fonts].map(f=>f.family))],bg:getComputedStyle(document.body).backgroundColor,canvas:document.querySelectorAll('canvas').length,svg:document.querySelectorAll('svg').length,scripts:[...document.scripts].map(s=>s.src).filter(Boolean),vars:[...document.styleSheets].flatMap(s=>{try{return [...s.cssRules].filter(r=>r.selectorText===':root').map(r=>r.cssText.slice(0,2500))}catch(e){return []}})})`));
+  c.close(); })();

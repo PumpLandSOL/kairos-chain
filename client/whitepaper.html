@@ -1,0 +1,86 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Whitepaper · Kairos Chain</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/k.css"><link rel="stylesheet" href="/kairos.css">
+<meta name="description" content="Kairos Chain whitepaper v1.0: a proof-native Layer 1 ordered by proof of work.">
+<style>
+.paper{max-width:820px;margin:40px auto 40px;background:rgba(12,15,24,.88);border:1px solid var(--rule2);border-radius:20px;padding:80px 86px;box-shadow:0 40px 120px rgba(0,0,0,.5)}
+.paper .t{text-align:center;border-bottom:1px solid var(--rule2);padding-bottom:36px}.paper .t h1{font-family:'Geist';font-weight:800;letter-spacing:-.045em;font-size:58px;line-height:1;letter-spacing:-.02em;margin-top:18px}.paper .t .sub{font-family:'Geist';font-weight:400;font-size:21px;color:var(--ink2);margin-top:10px}
+.paper .t .meta{font-family:'Geist Mono';font-size:11.5px;letter-spacing:.14em;color:var(--ink3);margin-top:22px;text-transform:uppercase}
+.abs{margin:34px 0 10px;padding:0 30px;font-size:15.5px;color:var(--ink2);text-align:justify}.abs b{font-family:'Geist Mono';font-size:11px;letter-spacing:.2em;color:var(--ink);display:block;text-align:center;margin-bottom:10px}
+.paper h2{font-family:'Geist';font-weight:800;letter-spacing:-.045em;font-size:31px;margin:48px 0 4px;letter-spacing:-.01em}.paper h2 i{color:var(--red);margin-right:10px}
+.paper h3{font-size:16.5px;font-weight:600;margin:24px 0 2px}
+.paper p{text-align:justify;margin-top:12px;font-size:16px;color:#cfcbc2;hyphens:auto}.paper ul,.paper ol{margin:12px 0 0 24px;font-size:16px;color:#cfcbc2}.paper li{margin-bottom:6px}
+.eq{font-family:'Geist Mono';font-size:13.5px;text-align:center;margin:18px 0;padding:12px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.paper table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}.paper th,.paper td{padding:8px 8px;border-bottom:1px solid var(--rule);text-align:left}.paper th{border-bottom:1px solid var(--rule2);font-family:'Geist Mono';font-weight:500;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.paper td.n{font-family:'Geist Mono';font-size:12.5px}.cap{font-family:'Geist Mono';font-size:10.5px;letter-spacing:.14em;color:var(--ink3);text-transform:uppercase;text-align:center;margin-top:8px}
+.refs{font-size:13.5px;color:var(--ink2)}.refs li{margin-bottom:8px}
+.dlbar{max-width:780px;margin:40px auto 0;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+@media(max-width:900px){.paper{padding:40px 22px;margin:24px auto}.paper .t h1{font-size:40px}.abs{padding:0}}
+@media print{.bar,.foot,.dlbar{display:none!important}body{background:#fff!important;background-image:none!important;color:#16130e}main{padding:0}.paper{box-shadow:none;border:0;margin:0;padding:0 8mm;max-width:none;background:#fff;color:#16130e}.paper p,.paper li,.abs,.refs{color:#2e2a22!important}.paper .t h1,.paper h2,.paper h3,.abs b,.paper td{color:#16130e}.paper h2 i{color:#cf3d1d}.paper svg circle,.paper svg path{stroke:#16130e}.paper th,.paper td,.eq{border-color:#ccc}.paper h2{break-after:avoid}.paper table,.eq{break-inside:avoid}@page{margin:18mm 14mm}}
+</style></head><body>
+<div class="wrap dlbar"><div class="eyebrow"><b>●</b> Whitepaper · v1.0</div><a class="btn ink" href="/kairos-whitepaper.pdf" download>Download PDF ↓</a></div>
+<article class="paper">
+ <div class="t"><svg viewBox="0 0 40 40" width="54" height="54" fill="none"><circle cx="20" cy="20" r="17.5" stroke="#f4f1ea" stroke-width="1.4"/><circle cx="20" cy="20" r="10.5" stroke="#f4f1ea" stroke-width="1" opacity=".55"/><path d="M20 20 L31.2 8.8" stroke="#ffc35a" stroke-width="1.8" stroke-linecap="round"/><circle cx="31.2" cy="8.8" r="2.8" fill="#ffc35a"/><circle cx="20" cy="20" r="2.1" fill="#f4f1ea"/></svg>
+  <h1>Kairos Chain</h1><div class="sub">A proof-native Layer 1 in which the present proves the past</div><div class="meta">Version 1.0 · October 2026 · kairoschain.xyz</div></div>
+ <div class="abs"><b>ABSTRACT</b>Blockchains ask every new participant to trust history: replay it, or accept someone else's snapshot of it. That cost grows with every block. Kairos Chain removes it. Each block carries a recursive proof attesting that the block is valid and that the proof before it was valid, so a single proof attests to the entire chain from genesis. Proof of work is retained only to order blocks; it cannot create value or validate an invalid state. Ownership uses zero-knowledge proofs of a secret instead of signatures, so no public key ever appears on chain. The proof system is built entirely on hash-based cryptography over binary fields, with no trusted setup. Kairos is an independent network forked from the open-source Parano1d protocol, launched with its own genesis, with no developer allocation in its block reward, and with a one-to-one migration of the $KAI community token into native KAI at genesis.</div>
+
+ <h2><i>1</i>The cost of history</h2>
+ <p>A Bitcoin full node validates the present by re-executing every transaction since 2009. Ethereum clients replay or accept a checkpoint. Solana nodes join from a snapshot supplied by a peer. In each case, a newcomer either pays a cost that grows linearly with the age of the chain or delegates trust to someone else. We call this <b>replay debt</b>: the older a chain gets, the less practical independent verification becomes, and the more verification concentrates in a few operators.</p>
+ <p>Kairos inverts the dependency. Rather than history proving the present, the present proves history. A node joining at any height receives the live state, the latest proof, and a short suffix of recent headers, authenticates them, and becomes a fully independent verifier. Peers supply data, never authority.</p>
+
+ <h2><i>2</i>Design overview</h2>
+ <p>Kairos separates two questions every blockchain must answer. <b>Is this block valid?</b> is answered by a proof. <b>Which valid block comes next?</b> is answered by proof of work. The work of producing a block is divided accordingly:</p>
+ <ol><li>The <b>wallet</b> proves private authorization: knowledge of the secret behind each input, bound to the transaction.</li>
+  <li>The <b>miner</b> proves the transaction logic, the exact state transition, and the validity of the previous block's proof, in one recursive proof.</li>
+  <li>The <b>miner</b> then freezes the block template and searches a 128-bit proof-of-work nonce.</li>
+  <li>The <b>network</b> verifies the proof and the work, then applies the writes.</li></ol>
+ <p>Because the proof is completed before the nonce search, hashpower alone cannot produce a block. A miner on Kairos is a proving full node backed by hashpower.</p>
+
+ <h2><i>3</i>Recursive history</h2>
+ <p>Let <i>T<sub>h</sub></i> be the terminal proof at height <i>h</i>. The <b>HistoryStep</b> relation proves, inside one circuit, that the block at <i>h</i> is valid with respect to the post-state of <i>h−1</i>, and that <i>T<sub>h−1</sub></i> verifies:</p>
+ <div class="eq">T<sub>h</sub> ⊢ Valid(B<sub>h</sub>, S<sub>h−1</sub> → S<sub>h</sub>) ∧ Verify(T<sub>h−1</sub>)</div>
+ <p>By induction, verifying <i>T<sub>h</sub></i> establishes the validity of every block from genesis to <i>h</i>. The terminal's size and verification cost are constant in <i>h</i>: about 0.9–1.0 MB, verified in roughly one second on a laptop. Headers are kept outside the recursion and checked for cumulative work; a hard 18-block finality window bounds reorganizations.</p>
+
+ <h2><i>4</i>The proof system</h2>
+ <p>Every cryptographic object in Kairos, including addresses, authorization, transactions, state commitments, recursive history and proof of work, uses one binary proof stack.</p>
+ <h3>4.1 Fields and hash</h3>
+ <p>Execution traces are committed over the binary tower field GF(2<sup>128</sup>); Fiat-Shamir challenges and recursive claims are drawn from GF(2<sup>256</sup>). Multiplication uses the carry-less multiply instructions present in modern CPUs. The single hash is <b>Poseidon2b</b> over GF(2<sup>128</sup>), width 4, S-box x<sup>7</sup>, 8 full and 58 partial rounds, separated by typed domain tags.</p>
+ <h3>4.2 FROST-GKR</h3>
+ <p>Block proofs are dominated by repeated Poseidon2b permutations and Merkle paths. FROST-GKR (Frobenius Reduction Over Shifted Tables) places every slot, round and lane of these computations on one Boolean hypercube, proves the x<sup>7</sup> relation in a single sumcheck (squaring is linear over a binary field), and links adjacent rounds through shifted tables. On a 59-permutation benchmark this reduces 472 product-chain sumchecks to 2, with a reported 10.7× faster prover and 51.7× smaller raw proof than layer-by-layer GKR.</p>
+ <h3>4.3 Commitments and recursion</h3>
+ <p>Relations are closed with batched sumcheck, zerocheck and lincheck, then opened through FRI-Binius / BaseFold polynomial commitments. There is no trusted setup and no elliptic-curve or pairing assumption anywhere in the stack. The verifier's Fiat-Shamir transcript is compiled into constraints so that the previous terminal can be verified inside the next one.</p>
+ <table><tr><th>Workload</th><th>Prove</th><th>Verify</th><th>Terminal</th></tr><tr><td>Small block, 63 payments</td><td class="n">17.6 s</td><td class="n">0.83 s</td><td class="n">913 KB</td></tr><tr><td>Large block, 206 payments</td><td class="n">42.6 s</td><td class="n">2.02 s</td><td class="n">981 KB</td></tr></table>
+ <div class="cap">Table 1 · upstream measurements, Intel i7-1365U, 12 threads</div>
+
+ <h2><i>5</i>Live state</h2>
+ <p>Kairos stores live outputs, not lifetime history. State is a sparse Merkle vector of 2<sup>24</sup> to 2<sup>32</sup> slots; each leaf records an amount, a monotonic creation identifier and an owner. Spending clears a slot, and new outputs reuse free slots with fresh identifiers, so a stale reference cannot spend a new occupant. When sustained occupancy reaches 75%, the domain doubles without moving any record. A chain's age therefore adds no storage or verification burden for a new node.</p>
+ <p>Transactions are built from fixed 323-byte <b>Tx8x2</b> pages of eight inputs and two outputs. A <b>PagedSpend</b> joins up to 128 pages into one atomic transaction with one identifier, one fee and one authorization capsule. A sender can export a portable receipt, a Merkle inclusion path checkable against the canonical header, which remains verifiable after the block body is pruned.</p>
+
+ <h2><i>6</i>Ownership without signatures</h2>
+ <p>A Kairos address is the Poseidon2b image of a 256-bit secret. To spend, the wallet produces a freshly randomized, witness-hiding zero-knowledge proof of knowledge of that secret, bound to the logical transaction identifier and input owner. No signature and no public key is ever published. The authorization proof is independent of the state root; the miner proves that the inputs are live.</p>
+ <p>A wallet may derive its master secret from a photograph: the image is decoded locally to canonical pixels and hashed with BLAKE3 in derive-key mode. Changing a single pixel yields a different wallet. This is a usability feature, not a privacy one: Kairos is transparent, and addresses and amounts are public during consensus.</p>
+
+ <h2><i>7</i>Contracts</h2>
+ <p>A live output may commit to a program, spending authorities, recipients, height conditions and two persistent 64-bit counters. The integer core has sixteen instructions with checked arithmetic and no loops, timers or cross-contract calls, which keeps each call cheap to prove. Templates cover refundable payments, timelocked vaults, delegated allowances, per-period budgets, recurring payments and tranche releases. The Pruv language compiles readable programs to the core and verifies declared postconditions with an SMT solver.</p>
+
+ <h2><i>8</i>Consensus parameters</h2>
+ <p>Blocks target a 30-second mean with ASERT difficulty (6-block reference epoch, 180-second half-life). The proof-of-work hash is a domain-separated Poseidon2b sponge over sixteen header elements including a 128-bit nonce; a block is valid when its digest is strictly below the target. Fork choice follows the greatest cumulative work, ties broken by the smaller tip hash. Blocks come in two proof classes, Small (63 pages) and Large (206 pages), both verified by every node.</p>
+
+ <h2><i>9</i>Economics</h2>
+ <p>Native KAI has six decimals. After genesis, all new KAI is created by block rewards, and <b>100% of every block reward goes to the miner</b>: Kairos removes the upstream protocol's developer allocation entirely. The reward starts at 16 KAI per block and steps down every 1,051,200 blocks (one year at the target block time) to a permanent tail of 1 KAI per block:</p>
+ <div class="eq">16 → 11.30 → 8 → 5.65 → 4 → 2.83 → 2 → 1.41 → 1 KAI (tail)</div>
+ <p>The eight declining years issue 53,810,928 KAI; the tail adds 1,051,200 KAI per year thereafter, keeping block production paid indefinitely. Transaction fees are 5,000 μKAI plus 100 per input and 700 per output, plus a state-growth fee per net-new slot that scales from 1× to 8× with occupancy. The state-growth component is burned, so filling the state has a real cost while consolidation remains cheap.</p>
+
+ <h2><i>10</i>The $KAI token and genesis migration</h2>
+ <p>The Kairos community forms before its network does. $KAI launches as a Solana token on pump.fun. Before mainnet, a snapshot time is announced in advance and a migration portal opens in which holders bind their Solana wallet to a k1 Kairos address. Bound balances are written into the genesis block as migration allocations, one $KAI to one KAI, and the genesis allocation file is published so that anyone can check it. The token exists to carry the community into the chain; it does not represent equity, revenue or any claim beyond that migration.</p>
+
+ <h2><i>11</i>Security and limitations</h2>
+ <p>The upstream protocol publishes an executable soundness certificate assessing the design at NIST post-quantum Category 1, conditional on stated premises: Poseidon2b modeled as an ideal random oracle, proximity-gap conjectures for the codes used, and an idealized compiler. It is an accounting of known failure events, not a machine-checked proof, and the implementation has not been independently audited. Further stated limitations:</p>
+ <ul><li>Header validation and state transfer still grow with chain length and the live set, respectively.</li><li>Proving costs roughly 16–18 seconds per block on a laptop, regardless of how many transactions it contains.</li><li>Throughput figures are capacity calculations, not measured sustained throughput.</li><li>The ledger is transparent; it is not a privacy chain.</li></ul>
+
+ <h2><i>12</i>Provenance</h2>
+ <p>Kairos Chain is an independent fork of Parano1d, an open-source proof-native Layer 1 designed by Ignotus Nemo and released under the Apache-2.0 license. Its binary-field and sumcheck foundations derive from binius64 (Irreducible) and hekate-math (Oumuamua Labs), and its Ligerito commitment from bolt-rs (Bain Capital Crypto, Succinct). Kairos keeps every original copyright and NOTICE attribution. It is not affiliated with Parano1d, and KAI is unrelated to the NOID coin.</p>
+
+ <h2>References</h2>
+ <ol class="refs"><li>Parano1d. Proof-native Layer 1 ordered by proof of work. github.com/proof-native/parano1d (Apache-2.0).</li><li>Ignotus Nemo. FROST-GKR: Frobenius Reduction Over Shifted Tables. github.com/proof-native/frost-gkr.</li><li>Irreducible / Binius developers. binius64. github.com/binius-zk/binius64.</li><li>Grassi et al. Poseidon2 and binary-field Poseidon variants.</li><li>Bitcoin ABC. ASERT difficulty adjustment algorithm (aserti3-2d).</li><li>Zeilberger, Chen, Fisch. BaseFold: efficient field-agnostic polynomial commitments.</li></ol>
+</article>
+<script src="/k.js"></script><script>chrome('/whitepaper')</script></body></html>

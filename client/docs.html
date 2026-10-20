@@ -1,0 +1,139 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Docs · Kairos Chain</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/k.css"><link rel="stylesheet" href="/kairos.css">
+<meta name="description" content="Kairos Chain documentation: consensus, the recursive proof stack, live state, signatureless ownership, Photo Key, contracts, economics, mining and the $KAI migration.">
+<style>
+.dl{display:grid;grid-template-columns:230px 1fr;gap:56px;padding:56px 0 40px}
+.side{position:sticky;top:90px;align-self:start;font-size:14.5px}.side h6{font-family:'Geist Mono';font-weight:500;font-size:10.5px;letter-spacing:.2em;color:var(--ink3);text-transform:uppercase;margin:22px 0 8px}.side h6:first-child{margin-top:0}
+.side a{display:block;padding:5px 0 5px 12px;border-left:1px solid var(--rule);color:var(--ink2)}.side a:hover,.side a.on{color:var(--ink);border-left-color:var(--red)}
+.doc{max-width:760px}.doc h1{font-family:'Geist';font-weight:800;letter-spacing:-.045em;font-size:68px;line-height:1;letter-spacing:-.025em}.doc .intro{font-size:19px;color:var(--ink2);margin-top:18px}
+.doc h2{font-family:'Geist';font-weight:800;letter-spacing:-.045em;font-size:42px;line-height:1.05;margin:76px 0 6px;letter-spacing:-.015em;scroll-margin-top:90px}.doc h2 small{font-family:'Geist Mono';font-size:12px;color:var(--red);letter-spacing:.16em;display:block;margin-bottom:10px}
+.doc h3{font-size:19px;font-weight:600;margin:32px 0 6px}.doc p{color:var(--ink2);margin-top:12px}.doc p b,.doc li b{color:var(--ink)}.doc ul,.doc ol{margin:12px 0 0 22px;color:var(--ink2)}.doc li{margin-bottom:6px}
+.doc code{font-family:'Geist Mono';font-size:.86em;background:var(--paper2);padding:1px 6px;border:1px solid var(--rule)}
+.doc pre{font-family:"Geist Mono";font-size:13px;background:#0b0e18;border:1px solid var(--rule2);border-radius:12px;color:#ffe2a1;padding:20px 22px;margin-top:16px;overflow-x:auto;line-height:1.6}
+.doc table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14.5px}.doc th,.doc td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--rule);vertical-align:top}.doc th{font-family:'Geist Mono';font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--rule2)}
+.doc td.n{font-family:'Geist Mono';font-size:13px;white-space:nowrap}
+.note{border-left:3px solid var(--gold);background:var(--card);border-radius:0 12px 12px 0;padding:16px 20px;margin-top:20px;font-size:15.5px;color:var(--ink2)}.note b{color:var(--ink)}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);margin-top:22px;border:1px solid var(--rule2);border-radius:14px;overflow:hidden;background:var(--card)}.flow div{padding:16px 14px;border-right:1px solid var(--rule);font-size:13.5px}.flow div:last-child{border:0}.flow b{display:block;font-family:'Geist Mono';color:var(--red);font-size:22px;font-weight:400}
+@media(max-width:900px){.dl{grid-template-columns:1fr}.side{position:static;display:none}.doc h1{font-size:48px}.flow{grid-template-columns:1fr 1fr}}
+</style></head><body>
+<main class="wrap dl">
+<aside class="side" id="side">
+ <h6>Start</h6><a href="#overview">Overview</a><a href="#why">Why proof-native</a>
+ <h6>Protocol</h6><a href="#consensus">Consensus</a><a href="#proofs">Proof stack</a><a href="#state">Live state</a><a href="#transactions">Transactions</a><a href="#receipts">Receipts</a>
+ <h6>Use</h6><a href="#ownership">Ownership</a><a href="#photokey">Photo Key</a><a href="#contracts">Contracts</a>
+ <h6>Network</h6><a href="#economics">Economics</a><a href="#mining">Mining</a><a href="#node">Run a node</a><a href="#security">Security model</a>
+ <h6>$KAI</h6><a href="#migration">Migration</a><a href="#params">Parameters</a><a href="#source">Open source</a>
+</aside>
+<article class="doc">
+ <div class="eyebrow"><b>●</b> Documentation</div><h1>Kairos Chain <span class="it red">docs.</span></h1>
+ <p class="intro">Everything about how Kairos Chain works: how blocks are proven and ordered, how state is kept small, how you own coins without a key, and how $KAI becomes native KAI.</p>
+
+ <h2 id="overview"><small>01 · START</small>Overview</h2>
+ <p>Kairos Chain is a <b>proof-native Layer 1 ordered by proof of work</b>. Each block contains a recursive proof, the <b>HistoryStep terminal</b>, that the new block is valid and that the previous terminal was valid. By induction, one terminal proves the whole chain from genesis.</p>
+ <p>A node therefore needs three things to be a full, independent verifier: the current live state, the latest terminal proof, and a short recent suffix of headers. Peers supply data, never authority.</p>
+ <div class="flow"><div><b>i</b>Wallet proves the spend is authorized</div><div><b>ii</b>Miner proves the block and the previous terminal</div><div><b>iii</b>Miner searches the PoW nonce</div><div><b>iv</b>Nodes verify proof + work, apply writes</div></div>
+
+ <h2 id="why"><small>02 · START</small>Why proof-native</h2>
+ <p>Bitcoin, Ethereum and Solana ask a new node to replay history or trust someone's snapshot. That cost grows forever. On Kairos the cost of verifying the chain is the cost of verifying one proof, which does not grow with height. Proof of work is still there, but only to choose the canonical order: it <b>cannot forge ownership or validate an invalid state</b>.</p>
+
+ <h2 id="consensus"><small>03 · PROTOCOL</small>Consensus</h2>
+ <ul><li><b>Validity</b> requires the header rules, the recursive HistoryStep relation and proof of work together. Block bytes plus work alone are never accepted.</li>
+  <li><b>Proof of work:</b> a domain-separated Poseidon2b sponge over 16 GF(2¹²⁸) header elements, including a <b>128-bit nonce</b>. A block is valid when the digest is below the target.</li>
+  <li><b>Order of operations:</b> the miner finishes the nonce-independent proof first, freezes the template, then searches the nonce. Hashpower alone cannot produce a block.</li>
+  <li><b>Block time:</b> 30-second mean, with <b>ASERT</b> difficulty (6-block reference epoch, 180 s half-life), computed with integer math so sibling blocks share an exact target.</li>
+  <li><b>Timestamps</b> must exceed the median of the last 11 headers and be at most 120 s ahead of local time.</li>
+  <li><b>Fork choice:</b> greatest cumulative work; an exact tie goes to the lexicographically smaller tip hash.</li>
+  <li><b>Finality:</b> a hard 18-block window. Reorgs deeper than 17 blocks are invalid by protocol rule.</li></ul>
+ <h3>Block classes</h3>
+ <table><tr><th>Class</th><th>Pages</th><th>Live inputs</th><th>Contract calls</th><th>Notes</th></tr>
+  <tr><td>Small (m23)</td><td class="n">63</td><td class="n">504</td><td class="n">63</td><td>default</td></tr>
+  <tr><td>Large (m24)</td><td class="n">206</td><td class="n">504</td><td class="n">63</td><td>producer opt-in; every node verifies both</td></tr></table>
+
+ <h2 id="proofs"><small>04 · PROTOCOL</small>Proof stack</h2>
+ <p>Addresses, authorization, transactions, state, recursive history and proof of work share <b>one binary proof stack</b>:</p>
+ <ul><li><b>Fields:</b> traces live in the binary tower field GF(2¹²⁸); Fiat-Shamir challenges and recursive claims use GF(2²⁵⁶).</li>
+  <li><b>Hash:</b> Poseidon2b, width 4, S-box x⁷, 8 full + 58 partial rounds, one permutation for every purpose, separated by typed domains.</li>
+  <li><b>FROST-GKR</b> (Frobenius Reduction Over Shifted Tables) folds repeated Poseidon2b permutations and Merkle paths into global sumcheck relations instead of layer-by-layer GKR.</li>
+  <li><b>FRI-Binius / BaseFold</b> polynomial commitments close the relation. There is <b>no trusted setup</b>.</li>
+  <li><b>HistoryStep</b> proves the current block relation and verifies the previous terminal inside the circuit. Terminal size and verification time do not grow with chain height.</li></ul>
+ <table><tr><th>Workload (laptop, 12 threads)</th><th>Prove</th><th>Verify</th><th>Terminal</th></tr>
+  <tr><td>Small block, 63 payments</td><td class="n">17.6 s</td><td class="n">0.83 s</td><td class="n">913 KB</td></tr>
+  <tr><td>Empty Small block</td><td class="n">16.6 s</td><td class="n">1.01 s</td><td class="n">—</td></tr>
+  <tr><td>Large block, 206 payments</td><td class="n">42.6 s</td><td class="n">2.02 s</td><td class="n">981 KB</td></tr></table>
+ <p class="dim" style="font-size:14px">Upstream measurements on an Intel i7-1365U with AVX2 + VPCLMUL. Proving time is roughly fixed per block: an empty block costs about as much as a full one.</p>
+
+ <h2 id="state"><small>05 · PROTOCOL</small>Live state</h2>
+ <p>State is a sparse Merkle vector of output <b>slots</b>, starting at 2²⁴ and able to grow to 2³². Each leaf holds <code>{amount, creation_id, owner}</code>. Spending clears a slot; new outputs reuse empty slots with a fresh, monotonic <code>creation_id</code>, so a stale reference can never spend a new occupant.</p>
+ <p>When occupancy stays at or above 75% across 10 of the last 18 finalized headers, the state doubles: the old root becomes the left child and nothing moves. Slots are grouped into 2¹⁶-slot segments; empty segments cost nothing to store.</p>
+
+ <h2 id="transactions"><small>06 · PROTOCOL</small>Transactions</h2>
+ <ul><li>A <b>Tx8x2 page</b> is a fixed 323-byte body with up to 8 inputs and 2 outputs.</li>
+  <li>A <b>PagedSpend</b> joins 1 to 128 pages into one atomic transaction with one ID, one fee and one authorization capsule.</li>
+  <li>Transactions anchor to a 144-block epoch (about 72 minutes).</li>
+  <li>Value rule: inputs = outputs + fee.</li></ul>
+
+ <h2 id="receipts"><small>07 · PROTOCOL</small>Receipts</h2>
+ <p>A sender's wallet can export a <b>portable receipt</b>: the canonical spend plus a Merkle inclusion path. Any node can verify it against the canonical header even after the block body has been pruned. A receipt proves the payment happened; it does not prove the output is still unspent.</p>
+
+ <h2 id="ownership"><small>08 · USE</small>Signatureless ownership</h2>
+ <p>A Kairos address is the Poseidon2b image of a <b>256-bit secret</b>. There is no public key. To spend, your wallet produces a freshly randomized, witness-hiding zero-knowledge proof that it knows the secret, bound to the exact transaction ID and input owner. Nothing that resembles a signature or public key appears on the wire.</p>
+ <ul><li>Address format: bech32m, <code>k1…</code></li><li>Authorization proof: up to about 92.7 KB</li><li>The miner, not the wallet, proves that inputs are live in state.</li></ul>
+ <div class="note"><b>Signatureless is not private.</b> Addresses and amounts are public during consensus.</div>
+
+ <h2 id="photokey"><small>09 · USE</small>Photo Key</h2>
+ <p>A wallet can derive its master secret from an image. The image is decoded locally to canonical RGBA8 pixels, never uploaded, and hashed with BLAKE3 in derive-key mode over the width, height and pixels. File metadata is ignored, so any resize or re-compression produces a different wallet. Images must be at least 32×32 with at least 64 distinct pixel values.</p>
+ <div class="note"><b>Keep the original file.</b> The image is your key. If you lose it or it gets re-encoded, the wallet cannot be recovered.</div>
+
+ <h2 id="contracts"><small>10 · USE</small>Contracts</h2>
+ <p>A live output can commit to a <b>program</b>, spending authorities, recipients, height conditions and two persistent u64 counters. The integer core has <b>16 instructions</b> (keep, move, add, subtract, min, max, less-than, equal, and assertions), checked arithmetic, and no loops, timers or cross-contract calls, which keeps every call cheap to prove.</p>
+ <p>Ready-made templates: refundable payment, timelocked vault, delegated allowance, budget per period, recurring payment, and gradual tranche release. Custom programs compile through the <b>Pruv</b> language, which checks declared postconditions with the Z3 solver.</p>
+
+ <h2 id="economics"><small>11 · NETWORK</small>Economics</h2>
+ <p>Native KAI has 6 decimals (1 KAI = 1,000,000 μKAI). After genesis, every new KAI is created by mining. <b>There is no developer allocation in the block reward: 100% goes to the miner who proves the block.</b></p>
+ <table><tr><th>Year</th><th>Reward per block</th><th>New KAI that year</th></tr>
+  <tr><td>1</td><td class="n">16</td><td class="n">16,819,200</td></tr><tr><td>2</td><td class="n">11.30</td><td class="n">11,878,560</td></tr><tr><td>3</td><td class="n">8</td><td class="n">8,409,600</td></tr><tr><td>4</td><td class="n">5.65</td><td class="n">5,939,280</td></tr>
+  <tr><td>5</td><td class="n">4</td><td class="n">4,204,800</td></tr><tr><td>6</td><td class="n">2.83</td><td class="n">2,974,896</td></tr><tr><td>7</td><td class="n">2</td><td class="n">2,102,400</td></tr><tr><td>8</td><td class="n">1.41</td><td class="n">1,482,192</td></tr><tr><td>9+</td><td class="n">1 (tail)</td><td class="n">1,051,200 per year</td></tr></table>
+ <p>A "year" is 1,051,200 blocks at the 30-second target. The permanent 1 KAI tail keeps miners paid to prove blocks forever.</p>
+ <h3>Fees</h3>
+ <p>5,000 μKAI per transaction, plus 100 μKAI per input and 700 μKAI per output, plus a <b>state-growth fee</b> of 2,500 μKAI × pressure for each net-new slot. Pressure is 1× below 50% occupancy, then 2×, 4× and 8× at 50%, 75% and 90%. The state-growth part is <b>burned</b>; the rest goes to the miner. Consolidating outputs avoids the burn.</p>
+
+ <h2 id="mining"><small>12 · NETWORK</small>Mining</h2>
+ <p>A miner is a <b>proving full node backed by hashpower</b>. Mining needs a 64-bit CPU with carry-less multiplication: x86-64 with SSE4.1 + PCLMULQDQ (AVX2 or AVX-512 with VPCLMUL is faster), or ARM64 with NEON + PMULL. No GPU is used.</p>
+ <ul><li><b>Internal miner:</b> run the node with mining enabled; proving and nonce search share a CPU thread budget.</li>
+  <li><b>External miner:</b> <code>kairos-miner</code> fetches single-use nonce templates over RPC and returns only a nonce; proving stays in the node.</li>
+  <li><b>Wallet mining:</b> the desktop wallet can mine with one click.</li></ul>
+
+ <h2 id="node"><small>13 · NETWORK</small>Run a node</h2>
+ <pre>kairos --check-hardware        # ends with NODE READY
+kairos                          # start a full node (P2P 9700, RPC 127.0.0.1:9701)
+kairos-cli getChainInfo
+kairos-cli walletBalance</pre>
+ <p>Recommended: a recent multi-core CPU, 8 GB of RAM or more (16 GB to mine), SSD storage and a 100 Mbit/s connection. A verifying node peaked at about 1.65 GB of RAM in upstream tests. Binaries and the desktop wallet for Windows, macOS and Linux are published with the testnet.</p>
+
+ <h2 id="security"><small>14 · NETWORK</small>Security model</h2>
+ <p>Kairos uses only hash-based, binary-field cryptography: no elliptic curves, no pairings, no trusted setup, and no public keys for ownership. The upstream protocol publishes an executable soundness certificate assessing the design at <b>NIST post-quantum Category 1, conditionally</b>, with a dominant half-success gate-depth floor of about 2<sup>173.39</sup>.</p>
+ <p>The word "conditional" matters. The assessment assumes Poseidon2b behaves as an ideal random oracle, assumes proximity-gap conjectures for the codes used, and models the compiler as ideal. It is a careful accounting tool, not a machine-checked proof, and the implementation has not had an independent third-party audit.</p>
+
+ <h2 id="migration"><small>15 · $KAI</small>Migration</h2>
+ <p>$KAI exists first as a Solana token launched on pump.fun. When Kairos mainnet launches, holders move it into native KAI <b>one for one</b>:</p>
+ <ol><li>A holder snapshot and the migration rules are published before mainnet, with the snapshot time announced in advance.</li>
+  <li>Holders bind their Solana wallet to a <code>k1…</code> Kairos address through the migration portal.</li>
+  <li>Bound balances are written into the genesis block as migration allocations, visible to anyone who inspects genesis.</li>
+  <li>After genesis, all new KAI comes from mining.</li></ol>
+ <div class="note">The migration portal, snapshot height and the exact genesis file format are published with the public testnet. Nothing here asks you to send tokens anywhere today.</div>
+
+ <h2 id="params"><small>16 · REFERENCE</small>Parameters</h2>
+ <table><tr><th>Parameter</th><th>Value</th></tr>
+  <tr><td>Block time</td><td class="n">30 s mean</td></tr><tr><td>Difficulty</td><td class="n">ASERT, 6 blocks / 180 s half-life</td></tr><tr><td>Finality window</td><td class="n">18 blocks</td></tr>
+  <tr><td>PoW nonce</td><td class="n">128-bit</td></tr><tr><td>Trace / challenge fields</td><td class="n">GF(2¹²⁸) / GF(2²⁵⁶)</td></tr><tr><td>Terminal proof cap</td><td class="n">1,100,000 B</td></tr>
+  <tr><td>Authorization cap</td><td class="n">256 KiB wire (≈92.7 KB worst case)</td></tr><tr><td>State slots</td><td class="n">2²⁴ → 2³²</td></tr><tr><td>Tx page</td><td class="n">8 in / 2 out, 323 B</td></tr>
+  <tr><td>Max atomic spend</td><td class="n">128 pages</td></tr><tr><td>Address</td><td class="n">bech32m k1…</td></tr><tr><td>Units</td><td class="n">1 KAI = 10⁶ μKAI</td></tr><tr><td>Ports</td><td class="n">P2P 9700 · RPC 9701</td></tr></table>
+
+ <h2 id="source"><small>17 · REFERENCE</small>Open source</h2>
+ <p>Kairos Chain is an independent fork of <a href="https://github.com/proof-native/parano1d" target="_blank" rel="noopener" style="text-decoration:underline">Parano1d</a>, an open-source proof-native Layer 1 by Ignotus Nemo, released under the Apache-2.0 license. Its cryptographic core builds on <b>binius64</b> (Irreducible), <b>hekate-math</b> (Oumuamua Labs) and <b>bolt-rs</b> (Bain Capital Crypto, Succinct). Kairos runs its own network with its own genesis, economics and brand, and keeps every original copyright and NOTICE attribution, as the license requires.</p>
+ <p>Kairos Chain is not affiliated with, endorsed by, or a successor to Parano1d or its NOID coin. KAI and NOID are separate assets on separate networks.</p>
+</article></main>
+<script src="/k.js"></script><script>chrome('/docs');
+const links = [...document.querySelectorAll('#side a')], secs = links.map((a) => document.querySelector(a.getAttribute('href')));
+addEventListener('scroll', () => { let k = 0; secs.forEach((s, i) => { if (s.getBoundingClientRect().top < 140) k = i; }); links.forEach((a, i) => a.classList.toggle('on', i === k)); }, { passive: true });
+</script></body></html>
