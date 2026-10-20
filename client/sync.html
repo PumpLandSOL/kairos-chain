@@ -48,7 +48,7 @@ function draw() { const bw = BW(+$('bw').value), [cpn, cpf] = CPU[+$('cp').value
   $('board').innerHTML = rows.map((r) => `<div class="row ${r.n === 'Kairos' ? 'k' : ''}"><div class="nm"><b>${r.n}</b><span>${r.s}</span></div><div class="track"><i class="dl" style="width:${Math.max(.4, (r.dl + r.vf) / max * 100)}%"></i><i class="vf" style="left:${r.dl / max * 100}%;width:${Math.max(.4, r.vf / max * 100)}%"></i></div><div class="t"><b>${fmt(r.tot)}</b><span>${r.size >= 1 ? Math.round(r.size).toLocaleString() + ' GB' : Math.round(r.size * 1000) + ' MB'} · verify ${fmt(r.vf)}</span></div></div>`).join('');
   const x = rows[0].tot / rows[3].tot; $('ratio').textContent = (x >= 1000 ? Math.round(x / 100) * 100 : Math.round(x)).toLocaleString() + '×';
   $('kgrow').textContent = '+' + Math.round(C[3][3] * 8000 / bw) + ' s';
-  const tw = `Verifying Bitcoin from scratch on my ${cpn.toLowerCase()} (${$('bwv').textContent}): ${fmt(rows[0].tot)}.\n\nVerifying Kairos Chain: ${fmt(rows[3].tot)}. One recursive proof, at any height.\n\nkairoschain.xyz/sync\n\n$KAI`;
+  const tw = `Verifying Bitcoin from scratch on my ${cpn.toLowerCase()} (${$('bwv').textContent}): ${fmt(rows[0].tot)}.\n\nVerifying Kairos Chain: ${fmt(rows[3].tot)}. One recursive proof, at any height.\n\nkairoschain.org/sync\n\n$KAI`;
   $('tw').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(tw); }
 ['bw', 'cp', 'yr'].forEach((i) => $(i).addEventListener('input', draw)); draw();
 </script></body></html>

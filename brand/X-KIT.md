@@ -1,6 +1,6 @@
 # Kairos Chain X kit
 
-site: https://kairoschain.xyz
+site: https://kairoschain.org
 
 ## Bio (147 chars)
 ```
@@ -11,13 +11,13 @@ Profile picture: brand/kairos-pfp.png · Header: brand/kairos-banner.png
 
 ## 1. kairos-hype-20s.mp4
 ```
-The present proves the past.
+Kairos: the proof-native Layer 1 blockchain.
 
-Kairos Chain is a proof-native Layer 1. Every block carries one recursive proof that the entire chain is valid, from genesis to now.
+Every block carries one recursive proof that the entire chain is valid, from genesis to now.
 
 No replay. No signatures. No trusted setup.
 
-kairoschain.xyz
+kairoschain.org
 
 $KAI
 ```
@@ -62,7 +62,7 @@ Your Kairos wallet can be a photograph.
 
 The pixels are read locally, never uploaded, and hashed into your 256-bit secret. Change one pixel and you get a different wallet.
 
-kairoschain.xyz/docs
+kairoschain.org/docs
 
 $KAI
 ```
@@ -84,7 +84,7 @@ Kairos is built on open source.
 
 It's an independent fork of the Parano1d protocol (Apache-2.0), launched with its own genesis, its own economics and no developer cut. Credit where it's due.
 
-Whitepaper: kairoschain.xyz/whitepaper
+Whitepaper: kairoschain.org/whitepaper
 ```
 
 ## 8. kairos-palette.png
@@ -95,7 +95,7 @@ Kairos is the decisive moment.
 
 One block. One proof. Everything before it.
 
-kairoschain.xyz
+kairoschain.org
 
 $KAI
 ```

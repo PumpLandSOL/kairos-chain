@@ -51,7 +51,7 @@
 const K = window.KairosKeys; let M = null, N = 1;
 function showKey(masterHex, keyId) { M = masterHex; setTimeout(scan, 50); N = 1; $('empty').style.display = 'none'; $('out').classList.add('on');
   const a = K.address(M, 0); $('a0').textContent = a; $('kid').textContent = keyId || K.keyId(M); $('sec').textContent = M; $('sec').classList.remove('show'); $('more').innerHTML = ''; $('mt').textContent = '';
-  $('tw').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(`My Kairos Chain address, made from a photo in my browser:\n\n${a}\n\nNo public key. No signature. Just a secret and a zero-knowledge proof.\n\nkairoschain.xyz/wallet\n\n$KAI`); }
+  $('tw').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(`My Kairos Chain address, made from a photo in my browser:\n\n${a}\n\nNo public key. No signature. Just a secret and a zero-knowledge proof.\n\nkairoschain.org/wallet\n\n$KAI`); }
 function moreAddr() { if (!M) return; const a = K.address(M, N); $('more').insertAdjacentHTML('beforeend', `<div onclick="copy('${a}')"><span style="color:var(--gold)">${N}</span><span>${a}</span></div>`); $('mt').textContent = N + 1 + ' total'; N++; }
 function rnd() { const m = K.randomMaster(); showKey(m); $('dz').innerHTML = '<b>Random secret generated</b><span>back up the master secret: there is no photo to recover from</span>'; }
 async function handle(f) {

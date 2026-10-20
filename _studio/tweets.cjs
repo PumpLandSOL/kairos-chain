@@ -2,13 +2,13 @@
 const fs = require('fs'), path = require('path');
 const BIO = 'Kairos Chain. A proof-native Layer 1: every block carries one recursive proof of the entire chain. No replay. No signatures. No trusted setup. $KAI';
 const T = [
-  ['kairos-hype-20s.mp4', `The present proves the past.
+  ['kairos-hype-20s.mp4', `Kairos: the proof-native Layer 1 blockchain.
 
-Kairos Chain is a proof-native Layer 1. Every block carries one recursive proof that the entire chain is valid, from genesis to now.
+Every block carries one recursive proof that the entire chain is valid, from genesis to now.
 
 No replay. No signatures. No trusted setup.
 
-kairoschain.xyz
+kairoschain.org
 
 $KAI`],
   ['kairos-vs.png', `To verify Bitcoin from scratch, you replay every block since 2009.
@@ -37,7 +37,7 @@ $KAI`],
 
 The pixels are read locally, never uploaded, and hashed into your 256-bit secret. Change one pixel and you get a different wallet.
 
-kairoschain.xyz/docs
+kairoschain.org/docs
 
 $KAI`],
   ['kairos-keyart.png', `$KAI comes first. The chain comes next.
@@ -51,17 +51,17 @@ $KAI`],
 
 It's an independent fork of the Parano1d protocol (Apache-2.0), launched with its own genesis, its own economics and no developer cut. Credit where it's due.
 
-Whitepaper: kairoschain.xyz/whitepaper`],
+Whitepaper: kairoschain.org/whitepaper`],
   ['kairos-palette.png', `Chronos is time passing.
 
 Kairos is the decisive moment.
 
 One block. One proof. Everything before it.
 
-kairoschain.xyz
+kairoschain.org
 
 $KAI`],
 ];
-let md = `# Kairos Chain X kit\n\nsite: https://kairoschain.xyz\n\n## Bio (${[...BIO].length} chars)\n\`\`\`\n${BIO}\n\`\`\`\n\nProfile picture: brand/kairos-pfp.png · Header: brand/kairos-banner.png\n`, bad = 0;
+let md = `# Kairos Chain X kit\n\nsite: https://kairoschain.org\n\n## Bio (${[...BIO].length} chars)\n\`\`\`\n${BIO}\n\`\`\`\n\nProfile picture: brand/kairos-pfp.png · Header: brand/kairos-banner.png\n`, bad = 0;
 T.forEach(([f, t], i) => { const n = [...t].length; if (n > 245) bad++; console.log(i + 1, n, f); md += `\n## ${i + 1}. ${f}\n\`\`\`\n${t}\n\`\`\`\n`; });
 fs.writeFileSync(path.join(__dirname, '..', 'brand', 'X-KIT.md'), md); if (bad) { console.log('OVER LIMIT:', bad); process.exit(1); }
