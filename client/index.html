@@ -3,6 +3,20 @@
 <meta name="description" content="Kairos Chain is a proof-native Layer 1. Every block carries one recursive proof of the entire chain, ordered by proof of work. No signatures. No replay. No trusted setup.">
 <meta property="og:title" content="Kairos Chain: the present proves the past"><meta property="og:description" content="A proof-native Layer 1. Every block carries one recursive proof of the entire chain."><meta property="og:image" content="/og.png"><meta name="twitter:card" content="summary_large_image">
 <style>
+.ch.alt{grid-template-columns:minmax(0,1fr) minmax(0,660px);padding:110px 64px 110px 150px}.ch.alt>div:first-child{order:2}.ch.alt .scene{order:1}
+.ch.hero{grid-template-columns:1fr;text-align:center;justify-items:center;padding:120px 64px 150px}.ch.hero .scene{display:none}.ch.hero .kick{justify-content:center}.ch.hero .kick::after{content:'';width:34px;height:1px;background:currentColor}
+.ch.hero .lead{margin:26px auto 0;max-width:640px;font-size:19px}.ch.hero .cta{justify-content:center}.ch.hero .tri{margin:40px auto 0;text-align:left}
+.ch.hero h1{font-size:clamp(64px,9.6vw,172px);line-height:.86}.ch.hero h2{font-size:clamp(54px,7vw,120px)}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:30px;max-width:620px}.chips div{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:rgba(10,12,20,.55);backdrop-filter:blur(6px)}
+.chips span{display:block;font-family:'Geist Mono';font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}.chips b{font-weight:500;font-size:14px;line-height:1.4;display:block}
+.hour{font-family:'Geist Mono';color:var(--fg);opacity:.5}
+.marq{position:absolute;left:0;right:0;bottom:34px;overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:13px 0;background:rgba(4,5,10,.5);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.marq div{display:flex;gap:46px;width:max-content;animation:mq 46s linear infinite;font-family:'Geist Mono';font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mu);white-space:nowrap}.marq b{color:var(--gold);font-weight:500}@keyframes mq{to{transform:translateX(-50%)}}
+.scroll-cue{position:absolute;bottom:96px;left:50%;transform:translateX(-50%);font-family:'Geist Mono';font-size:10px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase}.scroll-cue::after{content:'';display:block;width:1px;height:30px;margin:10px auto 0;background:linear-gradient(var(--gold),transparent);animation:cue 1.8s ease-in-out infinite}@keyframes cue{50%{transform:scaleY(.4);transform-origin:top}}
+body.flip .vig{background:radial-gradient(ellipse at 28% 50%,transparent 0,rgba(4,5,10,.25) 45%,rgba(4,5,10,.85) 100%),linear-gradient(270deg,rgba(4,5,10,.92) 0,rgba(4,5,10,.55) 38%,transparent 60%)}
+body.center .vig{background:radial-gradient(ellipse at 50% 50%,rgba(4,5,10,.35) 0,rgba(4,5,10,.6) 50%,rgba(4,5,10,.92) 100%)}
+.vig{transition:background .8s}
+@media(max-width:1100px){.ch.alt{grid-template-columns:1fr;padding:100px 22px 70px}.ch.alt>div:first-child{order:0}.chips{grid-template-columns:1fr}.marq{bottom:10px}.scroll-cue{display:none}.ch.hero{padding:110px 20px 120px}}
 html{scroll-snap-type:y proximity}
 #chrono{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
 .vig{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 72% 50%,transparent 0,rgba(4,5,10,.25) 45%,rgba(4,5,10,.85) 100%),linear-gradient(90deg,rgba(4,5,10,.92) 0,rgba(4,5,10,.55) 38%,transparent 60%)}
@@ -42,7 +56,6 @@ main{position:relative;z-index:2}
 <canvas id="chrono"></canvas><div class="vig"></div><div class="grain"></div>
 <main id="deck"></main>
 <div class="dial" id="dial"></div>
-<div class="ticks"><span id="tk-n"><b>00</b></span><div class="seg" id="seg"></div><span id="tk-l">cover</span></div>
 <script src="/k.js"></script>
 <script>
 // ---------- svg vocabulary ----------
@@ -148,21 +161,21 @@ const CH = [
 ];
 // ---------- build ----------
 const deck = $('deck');
-deck.innerHTML = CH.map((c, i) => `<section class="ch" id="${c.id}" data-i="${i}"><div><div class="kick rv">${c.k}</div>${i === 0 ? '<h1 class="rv" style="--d:.1">' + c.h + '</h1>' : '<h2 class="rv" style="--d:.1">' + c.h + '</h2>'}<p class="lead rv" style="--d:.2">${c.p}</p>
+const HR = ['XII', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'I', 'II', 'III', 'XII'], heroI = (i) => i === 0 || i === CH.length - 1;
+deck.innerHTML = CH.map((c, i) => `<section class="ch ${heroI(i) ? 'hero' : i % 2 ? '' : 'alt'}" id="${c.id}" data-i="${i}"><div><div class="kick rv"><span class="hour">${HR[i]}</span>${c.k.replace(/^\d+ · /, '')}</div>${i === 0 ? '<h1 class="rv" style="--d:.1">' + c.h + '</h1>' : '<h2 class="rv" style="--d:.1">' + c.h + '</h2>'}<p class="lead rv" style="--d:.2">${c.p}</p>
   ${c.tri ? `<div class="tri rv" style="--d:.3">${c.tri.map(([a, b]) => `<div><b>${a}</b><span>${b}</span></div>`).join('')}</div>` : ''}
-  ${c.spec ? `<div class="spec rv" style="--d:.3">${c.spec.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>` : ''}
+  ${c.spec ? `<div class="chips rv" style="--d:.3">${c.spec.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>` : ''}
   ${c.ca ? `<div class="rv" style="--d:.35"><span class="ca-pill"><em>$KAI CA</em><span id="ca">${KAI.ca || 'published at launch'}</span>${KAI.ca ? `<button class="btn" style="height:30px;padding:0 12px" onclick="copy(KAI.ca)">copy</button>` : ''}</span></div>` : ''}
   ${c.cta ? `<div class="cta rv" style="--d:.4">${c.cta.map(([t, u, p]) => `<a class="btn ${p ? 'pri' : ''}" href="${u}">${t}</a>`).join('')}</div>` : ''}</div>
-  <div class="scene">${c.s()}</div></section>`).join('');
+  <div class="scene">${c.s()}</div>${i === 0 ? `<div class="scroll-cue">scroll</div><div class="marq"><div>${[0, 1].map(() => [['Recursive proofs', 'every block'], ['ZK ownership', 'no signatures'], ['Proof stack', 'GF(2¹²⁸) · Poseidon2b'], ['Trusted setup', 'none'], ['Block time', '30 s · ASERT'], ['Terminal proof', '≈1 MB at any height'], ['Post-quantum', 'NIST Cat 1 · conditional'], ['Dev allocation', '0%']].map(([a, b]) => `<span><b>${a}</b> · ${b}</span>`).join('')).join('')}</div></div>` : ''}</section>`).join('');
 chrome('/');
 // ---------- nav: dial + ticks ----------
 let cur = 0; const secs = [...document.querySelectorAll('.ch')];
-$('seg').innerHTML = CH.map((_, i) => `<i data-i="${i}"></i>`).join(''); $('seg').onclick = (e) => { const i = e.target.dataset.i; if (i != null) go(+i); };
 $('dial').innerHTML = `<svg viewBox="0 0 92 92"><circle cx="46" cy="46" r="40" fill="rgba(6,8,14,.7)" stroke="rgba(244,241,234,.12)"/>${CH.map((_, i) => { const a = -Math.PI / 2 + i / CH.length * Math.PI * 2; return `<line id="dt${i}" x1="${46 + 33 * Math.cos(a)}" y1="${46 + 33 * Math.sin(a)}" x2="${46 + 39 * Math.cos(a)}" y2="${46 + 39 * Math.sin(a)}" stroke="rgba(244,241,234,.25)" stroke-width="2" stroke-linecap="round"/>`; }).join('')}<line id="dh" x1="46" y1="46" x2="46" y2="16" stroke="#ffc35a" stroke-width="2" stroke-linecap="round" style="transform-origin:46px 46px;transition:transform .8s cubic-bezier(.6,0,.2,1)"/><circle cx="46" cy="46" r="3" fill="#f4f1ea"/><text id="dn" x="46" y="66" fill="#f4f1ea" font-family="Geist Mono" font-size="10" text-anchor="middle">00</text></svg><div class="lb" id="dl">cover</div><div class="ar"><button onclick="go(cur-1)" aria-label="previous">↑</button><button onclick="go(cur+1)" aria-label="next">↓</button></div>`;
 function go(i) { i = Math.max(0, Math.min(CH.length - 1, i)); secs[i].scrollIntoView({ behavior: 'smooth' }); }
-function setCur(i) { cur = i; const n = String(i).padStart(2, '0'), lab = CH[i].k.replace(/^\d+ · /, '');
-  $('dh').style.transform = `rotate(${i / CH.length * 360}deg)`; $('dn').textContent = n; $('dl').textContent = lab; $('tk-n').innerHTML = `<b>${n}</b> / ${String(CH.length - 1).padStart(2, '0')}`; $('tk-l').textContent = lab;
-  CH.forEach((_, k) => { $('dt' + k).setAttribute('stroke', k === i ? '#ffc35a' : k < i ? 'rgba(255,195,90,.45)' : 'rgba(244,241,234,.25)'); }); [...$('seg').children].forEach((e, k) => e.className = k === i ? 'on' : k < i ? 'past' : ''); TARGET = i; }
+function setCur(i) { cur = i; const n = HR[i], lab = CH[i].k.replace(/^\d+ · /, '');
+  $('dh').style.transform = `rotate(${i / CH.length * 360}deg)`; $('dn').textContent = n; $('dl').textContent = lab; document.body.classList.toggle('flip', !heroI(i) && i % 2 === 0); document.body.classList.toggle('center', heroI(i));
+  CH.forEach((_, k) => { $('dt' + k).setAttribute('stroke', k === i ? '#ffc35a' : k < i ? 'rgba(255,195,90,.45)' : 'rgba(244,241,234,.25)'); }); TARGET = i; }
 const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('act'); if (e.intersectionRatio > .5) setCur(+e.target.dataset.i); } }), { threshold: [.2, .55] }); secs.forEach((s) => io.observe(s));
 addEventListener('keydown', (e) => { if (['ArrowDown', 'PageDown', 'j'].includes(e.key)) { e.preventDefault(); go(cur + 1); } if (['ArrowUp', 'PageUp', 'k'].includes(e.key)) { e.preventDefault(); go(cur - 1); } });
 // ---------- live scene bits ----------
@@ -176,11 +189,11 @@ addEventListener('keydown', (e) => { if (['ArrowDown', 'PageDown', 'j'].includes
   draw(); setInterval(draw, 2600); })();
 (() => { let t = 0; setInterval(() => { t++; $('nonce').textContent = '0x' + (Math.random() * 2 ** 32 >>> 0).toString(16).padStart(8, '0').slice(0, 6) + '…'; $('pw').textContent = t % 40 > 34 ? 'FOUND · BLOCK SEALED ✓' : 'searching · ' + (t * 7919 % 99991).toLocaleString() + ' tries'; }, 90); })();
 // ---------- the chronometer (background) ----------
-let TARGET = 0; (() => { const cv = $('chrono'), g = cv.getContext('2d'); let w, h, dpr, ang = 0, mx = 0, my = 0; const stars = Array.from({ length: 160 }, () => [Math.random(), Math.random(), Math.random()]);
+let TARGET = 0; (() => { const cv = $('chrono'), g = cv.getContext('2d'); let w, h, dpr, ang = 0, mx = 0, my = 0, side = .5; const stars = Array.from({ length: 160 }, () => [Math.random(), Math.random(), Math.random()]);
   const fit = () => { dpr = Math.min(2, devicePixelRatio || 1); w = innerWidth; h = innerHeight; cv.width = w * dpr; cv.height = h * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); }; fit(); addEventListener('resize', fit);
   addEventListener('mousemove', (e) => { mx = e.clientX / w - .5; my = e.clientY / h - .5; });
   const t0 = performance.now();
-  function frame(now) { const t = (now - t0) / 1000, cx = w * (w > 1100 ? .64 : .5) + mx * 18, cy = h * .5 + my * 14, R = Math.min(w, h) * .62;
+  function frame(now) { const sd = w <= 1100 || heroI(TARGET) ? .5 : TARGET % 2 ? .64 : .36; side += (sd - side) * .05; const t = (now - t0) / 1000, cx = w * side + mx * 18, cy = h * .5 + my * 14, R = Math.min(w, h) * .62;
     g.clearRect(0, 0, w, h);
     for (const [x, y, z] of stars) { g.fillStyle = `rgba(244,241,234,${.08 + z * .25 * (.6 + .4 * Math.sin(t * (.5 + z) + x * 20))})`; g.fillRect(x * w, y * h, 1 + z, 1 + z); }
     const want = TARGET / CH.length * Math.PI * 2; ang += (want - ang) * .045;
