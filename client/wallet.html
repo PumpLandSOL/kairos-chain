@@ -16,6 +16,7 @@
 .more{margin-top:8px;font-family:'Geist Mono';font-size:12.5px}.more div{display:grid;grid-template-columns:28px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--rule);color:var(--ink2);word-break:break-all;cursor:pointer}.more div:hover{color:var(--fg)}
 .warn{border-left:3px solid #ff5d4f;background:rgba(255,93,79,.06);border-radius:0 12px 12px 0;padding:12px 16px;font-size:13.5px;color:var(--ink2);margin-top:16px}.warn b{color:var(--fg)}
 .how{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:10px 0 80px}.how div{border:1px solid var(--rule);border-radius:16px;padding:18px}.how i{font-style:normal;font-family:'Geist Mono';color:var(--gold);font-size:12px}.how b{display:block;margin-top:8px;font-size:15.5px}.how p{color:var(--ink3);font-size:13px;margin-top:6px}
+.inp2{width:100%;height:42px;border-radius:12px;border:1px solid var(--rule2);background:rgba(4,5,10,.6);color:var(--fg);font-family:'Geist Mono';font-size:13px;padding:0 12px;outline:none}.inp2:focus{border-color:var(--gold)}.tng{display:grid;grid-template-columns:1fr 1.3fr;gap:16px}@media(max-width:900px){.tng{grid-template-columns:1fr}}
 .chk input{width:100%;height:46px;border-radius:12px;border:1px solid var(--rule2);background:rgba(4,5,10,.6);color:var(--fg);font-family:'Geist Mono';font-size:13px;padding:0 14px;outline:none}.chk p{font-size:13px;margin-top:8px;font-family:'Geist Mono'}
 @media(max-width:900px){.lay,.how{grid-template-columns:1fr}}
 </style></head><body>
@@ -36,12 +37,19 @@
    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap"><button class="btn" onclick="moreAddr()">+ next address</button><button class="btn" onclick="copy($('sec').textContent)">Copy secret</button><a class="btn pri" id="tw" target="_blank" rel="noopener">Post my address</a></div>
    <div class="warn"><b>Anyone with the photo or the master secret controls this wallet.</b> Nothing is stored or sent anywhere. Close the tab and it's gone from this page.</div></div></div>
 </div>
+<div class="pan" id="tn" style="display:none;margin-bottom:20px"><h3>Web testnet wallet <span style="float:right;color:var(--ink3)" id="tnh"></span></h3>
+ <div class="tng"><div><div class="lbl"><span>Balance · test KAI</span></div><div style="font-size:44px;font-weight:800;letter-spacing:-.04em" id="tnb">0</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn pri" onclick="drip()">Get 25 test KAI</button><a class="btn" id="mlink" href="/mine">Mine to this wallet</a></div>
+  <label style="display:flex;gap:8px;align-items:center;margin-top:14px;font-size:13px;color:var(--ink3)"><input type="checkbox" id="rem"> remember this key on this device</label><p class="dim" id="tnm" style="font-size:13px;margin-top:10px"></p></div>
+  <div><div class="lbl"><span>Send</span></div><input class="inp2" id="sto" placeholder="to k1…" spellcheck="false"><input class="inp2" id="samt" placeholder="amount in KAI" inputmode="decimal" style="margin-top:8px"><button class="btn" style="margin-top:10px;width:100%;justify-content:center" onclick="sendTx()">Send</button>
+  <div class="more" id="tna" style="margin-top:12px"></div></div></div>
+ <p class="dim" style="font-size:12.5px;margin-top:14px">On the web testnet a spend reveals the spend secret of a one-time address, so the wallet moves your change to the next fresh address and retires the old one. Mainnet spends use zero-knowledge proofs instead.</p></div>
 <div class="pan chk" style="margin-bottom:20px"><h3>Check an address</h3><input id="chk" placeholder="paste a k1… address" spellcheck="false"><p id="chkr" class="dim">Checksum and format are verified locally.</p></div>
 <div class="how"><div><i>01</i><b>Pixels, not the file</b><p>Decoded to exact RGBA pixels. Metadata is ignored.</p></div><div><i>02</i><b>BLAKE3 derive-key</b><p>Width, height and pixels hash into a 256-bit master secret.</p></div><div><i>03</i><b>Poseidon2b</b><p>The master derives spend secrets; each hashes to an address.</p></div><div><i>04</i><b>No public key</b><p>On Kairos you prove you know the secret with a zero-knowledge proof. Nothing to sign.</p></div></div>
 </main>
 <script src="/k.js"></script><script src="/kairos-keys.js"></script><script>chrome('/wallet');
 const K = window.KairosKeys; let M = null, N = 1;
-function showKey(masterHex, keyId) { M = masterHex; N = 1; $('empty').style.display = 'none'; $('out').classList.add('on');
+function showKey(masterHex, keyId) { M = masterHex; setTimeout(scan, 50); N = 1; $('empty').style.display = 'none'; $('out').classList.add('on');
   const a = K.address(M, 0); $('a0').textContent = a; $('kid').textContent = keyId || K.keyId(M); $('sec').textContent = M; $('sec').classList.remove('show'); $('more').innerHTML = ''; $('mt').textContent = '';
   $('tw').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(`My Kairos Chain address, made from a photo in my browser:\n\n${a}\n\nNo public key. No signature. Just a secret and a zero-knowledge proof.\n\nkairoschain.xyz/wallet\n\n$KAI`); }
 function moreAddr() { if (!M) return; const a = K.address(M, N); $('more').insertAdjacentHTML('beforeend', `<div onclick="copy('${a}')"><span style="color:var(--gold)">${N}</span><span>${a}</span></div>`); $('mt').textContent = N + 1 + ' total'; N++; }
@@ -64,4 +72,28 @@ const d = $('drop'); ['dragenter', 'dragover'].forEach((t) => d.addEventListener
 d.addEventListener('drop', (e) => handle(e.dataTransfer.files[0]));
 $('chk').oninput = () => { const v = $('chk').value.trim(); if (!v) { $('chkr').textContent = 'Checksum and format are verified locally.'; $('chkr').style.color = ''; return; } const r = K.validateAddress(v);
   $('chkr').textContent = r.valid ? '✓ valid Kairos address' + (r.canonical === false ? ' (legacy checksum)' : '') : '✗ ' + r.error; $('chkr').style.color = r.valid ? '#7dffb2' : '#ff8b80'; };
+
+// ---------- web testnet wallet ----------
+const kai = (u) => (Number(BigInt(u)) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 6 }); let ACC = [];
+const api = async (p, b) => { const r = await fetch(p, b ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) } : {}); return r.json(); };
+async function scan() { if (!M) return; $('tn').style.display = 'block'; const out = []; let gap = 0;
+  for (let i = 0; i < 60 && gap < 3; i++) { const a = K.address(M, i), r = await api('/api/tn/address/' + a); const used = !!(r.retired || (r.history && r.history.length) || r.pending);
+    out.push({ i, a, bal: BigInt(r.balance || 0), coins: r.coins || [], retired: r.retired, used }); gap = used ? 0 : gap + 1; }
+  ACC = out; $('tnb').textContent = kai(out.reduce((t, x) => t + x.bal, 0n)); const fresh = recvAddr(); $('mlink').href = '/mine#' + fresh;
+  $('tna').innerHTML = out.filter((x) => x.used || x.bal > 0n).map((x) => '<div><span style="color:var(--gold)">' + x.i + '</span><span>' + x.a.slice(0, 16) + '…' + x.a.slice(-8) + ' · ' + kai(x.bal) + ' KAI' + (x.retired ? ' · retired' : '') + '</span></div>').join('') || '<p class="dim" style="font-size:13px">No testnet coins yet.</p>';
+  try { const sm = await api('/api/explorer/summary'); $('tnh').textContent = 'block ' + sm.height; } catch {} }
+function recvAddr() { const lastUsed = ACC.reduce((m, x) => (x.used ? x.i : m), -1); return K.address(M, lastUsed + 1); }
+async function drip() { const r = await api('/api/tn/faucet', { to: recvAddr() }); $('tnm').textContent = r.error ? r.error : 'Faucet sent 25 test KAI. It lands in the next block (about 30 s).'; setTimeout(scan, 1500); }
+async function sendTx() { const to = $('sto').value.trim(), v = K.validateAddress(to); if (!v.valid) return toast('Enter a valid k1 address');
+  const amt = BigInt(Math.round(parseFloat($('samt').value) * 1e6) || 0); if (amt <= 0n) return toast('Enter an amount');
+  const fee8 = BigInt((await api('/api/tn/fee?in=8&out=2')).min), src = ACC.find((x) => !x.retired && x.coins.length && x.coins.slice(0, 8).reduce((t, c) => t + BigInt(c.amount), 0n) >= amt + fee8);
+  if (!src) return toast('Not enough on one address: a send uses up to 8 coins from a single address');
+  const coins = src.coins.slice(0, 8), sum = coins.reduce((t, c) => t + BigInt(c.amount), 0n), f = BigInt((await api('/api/tn/fee?in=' + coins.length + '&out=2')).min), change = sum - amt - f;
+  const lastUsed = Math.max(src.i, ACC.reduce((m, x) => (x.used ? x.i : m), -1)), outs = [{ to, amount: amt.toString() }];
+  if (change > 0n) outs.push({ to: K.address(M, lastUsed + 1), amount: change.toString() });
+  const r = await api('/api/tn/tx', { inputs: coins.map((c) => ({ slot: c.slot, secret: K.spendSecret(M, src.i) })), outputs: outs, fee: (change > 0n ? f : sum - amt).toString() });
+  $('tnm').textContent = r.error ? r.error : 'Sent. txid ' + r.txid.slice(0, 16) + '… lands in the next block.'; if (!r.error) { $('samt').value = ''; setTimeout(scan, 1500); } }
+$('rem').onchange = () => { try { if ($('rem').checked && M) localStorage.setItem('kai_master', M); else localStorage.removeItem('kai_master'); } catch {} };
+setInterval(() => { if (M) scan(); }, 15000);
+try { const saved = localStorage.getItem('kai_master'); if (saved) { $('rem').checked = true; showKey(saved); $('dz').innerHTML = '<b>Key remembered on this device</b><span>uncheck "remember" to forget it</span>'; } } catch {}
 </script></body></html>

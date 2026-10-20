@@ -6,6 +6,12 @@ services:
     buildCommand: "true"
     startCommand: node server/index.js
     healthCheckPath: /healthz
+    disk:
+      name: kairos-data
+      mountPath: /data
+      sizeGB: 1
     envVars:
+      - key: DATA_PATH
+        value: /data
       - key: NODE_VERSION
         value: "22"

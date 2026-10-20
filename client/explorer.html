@@ -16,7 +16,7 @@
 @media(max-width:900px){.stats{grid-template-columns:1fr 1fr}.cols{grid-template-columns:1fr}.bk{grid-template-columns:80px 1fr}.bk .t{display:none}}
 </style></head><body>
 <main class="wrap">
-<section class="hd"><div><div class="eyebrow"><b>●</b> Explorer</div><h1>Kairos <span class="it red">testnet.</span></h1></div><span class="live off" id="lv"><i></i><span id="lvt">connecting</span></span></section>
+<section class="hd"><div><div class="eyebrow"><b>●</b> Explorer</div><h1>Kairos <span class="it red">testnet.</span></h1><p style="color:var(--ink2);margin-top:12px;max-width:640px" id="modep"></p></div><span class="live off" id="lv"><i></i><span id="lvt">connecting</span></span></section>
 <div id="app"></div>
 </main>
 <script src="/k.js"></script><script>chrome('/explorer');
@@ -26,10 +26,11 @@ let lastTop = 0, shell = false;
 function render(s) {
   if (!s.online) { $('lv').className = 'live off'; $('lvt').textContent = 'offline';
     $('app').innerHTML = `<div class="off-card"><div class="eyebrow"><b>●</b> testnet</div><h2>The first Kairos blocks<br><span class="it red">are coming.</span></h2><p>This explorer reads straight from a Kairos node. When the testnet is running, every block, its recursive proof and its miner appear here live.</p><div style="margin-top:26px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><a class="btn pri" href="/docs#mining">How mining works</a><a class="btn" href="${KAI.gh}" target="_blank" rel="noopener">Node source</a></div></div>`; shell = false; return; }
-  $('lv').className = 'live'; $('lvt').textContent = 'live · block ' + s.height.toLocaleString();
+  $('lv').className = 'live'; $('lvt').textContent = (s.mode === 'web' ? 'web testnet · ' : 'live · ') + 'block ' + s.height.toLocaleString();
+  if (s.mode === 'web') $('modep').innerHTML = 'The web testnet runs the real Kairos PoW, block ids, ASERT difficulty and fee rules. Recursive block proofs arrive with the node testnet. <a href="/mine" style="color:var(--gold)">Mine a block →</a>';
   if (!shell) { $('app').innerHTML = `<div class="search"><input id="q" placeholder="Search a block height, txid or k1… address" spellcheck="false"><button class="btn pri" onclick="find()">Search</button></div><div class="det" id="det"></div><div class="stats" id="st"></div>
-     <div class="cols"><div class="pan"><h3><span>Latest blocks</span><span>each one proves all before it</span></h3><div id="bl"></div></div><div class="pan"><h3><span>Miners</span><span id="msc"></span></h3><div id="mn"></div></div></div>`; $('q').onkeydown = (e) => e.key === 'Enter' && find(); shell = true; }
-  $('st').innerHTML = [['Block height', s.height.toLocaleString(), 1], ['Avg block time', s.avgBlockSec ? s.avgBlockSec.toFixed(1) + ' s' : '—'], ['Terminal proof', s.terminalBytes ? (s.terminalBytes / 1e6).toFixed(2) + ' MB' : '—'], ['Proofs to verify all', '1', 1], ['Live outputs', s.activeSlots.toLocaleString()], ['KAI in existence', KAIu(s.supply)], ['Next reward', KAIu(s.reward) + ' KAI'], ['Peers', s.peers ?? '—']].map(([k, v, g]) => `<div><span>${k}</span><b class="${g ? 'g' : ''}">${v}</b></div>`).join('');
+     <div class="cols"><div class="pan"><h3><span>Latest blocks</span><span id="blsub">newest first</span></h3><div id="bl"></div></div><div class="pan"><h3><span>Miners</span><span id="msc"></span></h3><div id="mn"></div></div></div>`; $('q').onkeydown = (e) => e.key === 'Enter' && find(); shell = true; }
+  $('st').innerHTML = [['Block height', s.height.toLocaleString(), 1], ['Avg block time', s.avgBlockSec ? s.avgBlockSec.toFixed(1) + ' s' : '—'], ...(s.mode === 'web' ? [['Pending txs', s.mempool], ['KAI burned', KAIu(s.burned)]] : [['Terminal proof', s.terminalBytes ? (s.terminalBytes / 1e6).toFixed(2) + ' MB' : '—'], ['Proofs to verify all', '1', 1]]), ['Live outputs', s.activeSlots.toLocaleString()], ['KAI in existence', KAIu(s.supply)], ['Next reward', KAIu(s.reward) + ' KAI'], s.mode === 'web' ? ['Difficulty', s.difficultyBits + ' bits'] : ['Peers', s.peers ?? '—']].map(([k, v, g]) => `<div><span>${k}</span><b class="${g ? 'g' : ''}">${v}</b></div>`).join('');
   $('bl').innerHTML = s.recent.map((b) => `<div class="bk ${b.height > lastTop && lastTop ? 'new' : ''}" onclick="block(${b.height})"><b>#${b.height.toLocaleString()}</b><span class="m">${sh(b.miner, 14, 8)} · ${b.active_slot_count.toLocaleString()} live outputs</span><span class="t">${ago(b.timestamp)}</span></div>`).join(''); lastTop = s.height; }
 async function block(h) { const d = await (await fetch(API + '/block/' + h)).json(); show(`Block #${h}`, d); }
 async function find() { const q = $('q').value.trim(); if (!q) return; let r;
@@ -37,6 +38,6 @@ async function find() { const q = $('q').value.trim(); if (!q) return; let r;
   show(q, await r.json()); }
 function show(t, d) { const e = $('det'); e.classList.add('on'); e.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">${t.length > 40 ? sh(t, 16, 10) : t}</b><button class="btn" style="height:34px" onclick="$('det').classList.remove('on')">close</button></div><pre>${JSON.stringify(d, null, 2).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))}</pre>`; e.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
 async function tick() { try { render(await (await fetch(API + '/summary')).json()); } catch { render({ online: false }); }
-  if (shell) try { const m = await (await fetch(API + '/miners')).json(); $('msc').textContent = 'blocks 1–' + m.scannedTo.toLocaleString(); $('mn').innerHTML = m.miners.slice(0, 15).map((x) => `<div class="mn"><span class="r">${x.rank}</span><span class="a">${sh(x.miner, 14, 8)}</span><b>${x.blocks}</b></div>`).join('') || '<p class="dim" style="padding:14px 0">counting…</p>'; } catch {} }
+  if (shell) try { const m = await (await fetch(API + '/miners')).json(); $('msc').textContent = 'blocks 1–' + m.scannedTo.toLocaleString(); $('mn').innerHTML = m.miners.slice(0, 15).map((x) => `<div class="mn"><span class="r">${x.rank}</span><span class="a">${x.house ? 'testnet house miner' : sh(x.miner, 14, 8)}</span><b>${x.blocks}</b></div>`).join('') || '<p class="dim" style="padding:14px 0">counting…</p>'; } catch {} }
 tick(); setInterval(tick, 5000);
 </script></body></html>

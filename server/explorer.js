@@ -24,9 +24,11 @@ async function summary() { if (lastSum && Date.now() - lastSumAt < 4000) return 
   const gaps = recent.slice(0, -1).map((x, i) => x.timestamp - recent[i + 1].timestamp), avg = gaps.length ? gaps.reduce((a, b) => a + b, 0) / gaps.length : null;
   lastSum = { online: true, height: ci.height, bestHash: ci.best_hash, supply: ci.circulating_supply_micronoid, activeSlots: ci.active_slot_count, logSlots: ci.log_slots, difficultyBits: mi.difficulty_bits, reward: mi.block_reward_micronoid, peers, terminalBytes: term ? term.length / 2 : null, avgBlockSec: avg, recent };
   lastSumAt = Date.now(); return lastSum; }
-module.exports = async function route(p, u, send) {
+
+module.exports = async function route(p, u, send, req, body) {
+  if (p.startsWith('/api/tn/')) return testnetRoute(p, u, send, req, body);
   if (!p.startsWith('/api/explorer')) return false;
-  if (!RPC) return send(200, { online: false }), true;
+  if (!RPC) return webExplorer(p, u, send);
   try {
     if (p === '/api/explorer/summary') return send(200, await summary()), true;
     if (p === '/api/explorer/miners') return send(200, { scannedTo: scanned, tip, miners: board() }), true;
@@ -38,3 +40,5 @@ module.exports = async function route(p, u, send) {
     return send(404, { error: 'unknown endpoint' }), true;
   } catch (e) { return send(502, { online: false, error: String(e.message || e) }), true; }
 };
+
+const { webExplorer, testnetRoute } = require('./tn-routes.js');
