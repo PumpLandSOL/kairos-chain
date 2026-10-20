@@ -14,4 +14,4 @@ http.createServer(async (req, res) => {
   if (!fp.startsWith(CLIENT) || !fs.existsSync(fp) || fs.statSync(fp).isDirectory()) { res.writeHead(404, { 'content-type': 'text/html' }); return fs.createReadStream(path.join(CLIENT, '404.html')).pipe(res); }
   res.writeHead(200, { 'content-type': MIME[path.extname(fp)] || 'application/octet-stream', 'cache-control': /\.(png|pdf|mp4|woff2)$/.test(fp) ? 'public, max-age=86400' : 'no-cache' });
   fs.createReadStream(fp).pipe(res);
-}).listen(PORT, () => console.log('Kairos Chain site on :' + PORT));
+}).listen(PORT, () => { console.log('Kairos Chain site on :' + PORT); if (!process.env.KAIROS_RPC) require('./testnet.js'); });
