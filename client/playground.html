@@ -1,0 +1,72 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contract playground · Kairos Chain</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/k.css"><link rel="stylesheet" href="/kairos.css">
+<meta name="description" content="Run Kairos proof-native contracts in your browser: vaults, allowances, budgets, recurring payments and vesting on the real 16-step integer core.">
+<style>
+.hd{padding:50px 0 10px}.hd h1{font-weight:800;letter-spacing:-.055em;line-height:.92;font-size:clamp(44px,5.6vw,84px);margin-top:16px}.hd p{font-size:17.5px;color:var(--ink2);max-width:720px;margin-top:16px}
+.tpl{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:26px}.tpl button{border:1px solid var(--rule2);border-radius:14px;background:var(--card);color:var(--fg);padding:14px 12px;text-align:left;cursor:pointer;font-family:inherit;transition:.15s}
+.tpl button b{display:block;font-size:14px;font-weight:700}.tpl button span{display:block;font-family:'Geist Mono';font-size:10px;letter-spacing:.12em;color:var(--ink3);margin-top:4px;text-transform:uppercase}.tpl button.on{border-color:var(--gold);box-shadow:0 0 30px rgba(255,195,90,.15)}.tpl button.on b{color:var(--gold)}
+.lay{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:14px;margin:14px 0 80px;align-items:start}.pan{border:1px solid var(--rule2);border-radius:18px;background:var(--card);padding:18px 20px}
+.pan h3{font-family:'Geist Mono';font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;display:flex;justify-content:space-between}
+.desc{color:var(--ink2);font-size:14px;margin-bottom:14px;line-height:1.55}
+.f{display:grid;grid-template-columns:1fr 1fr;gap:8px}.f label{display:block}.f label.w{grid-column:1/-1}.f span{display:block;font-family:'Geist Mono';font-size:9.5px;letter-spacing:.12em;color:var(--ink3);text-transform:uppercase;margin-bottom:4px}
+.f input,.f select{width:100%;height:38px;border-radius:10px;border:1px solid var(--rule2);background:rgba(4,5,10,.6);color:var(--fg);font-family:'Geist Mono';font-size:13px;padding:0 10px;outline:none}.f input:focus,.f select:focus{border-color:var(--gold)}.f input:disabled{opacity:.5}
+.prog{font-family:'Geist Mono';font-size:12.5px;border-top:1px solid var(--rule)}.prog div{display:grid;grid-template-columns:28px 1fr;gap:8px;padding:6px 6px;border-bottom:1px solid var(--rule);color:var(--ink3);border-radius:6px}.prog div.live{color:var(--fg)}.prog div.hit{background:rgba(255,195,90,.12);color:var(--gold)}.prog div.err{background:rgba(255,93,79,.15);color:#ff8b80}.prog i{font-style:normal;color:var(--dim)}
+.regs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}.regs div{border:1px solid var(--rule);border-radius:12px;padding:10px 12px}.regs span{font-family:'Geist Mono';font-size:9.5px;letter-spacing:.14em;color:var(--ink3);text-transform:uppercase}.regs b{display:block;font-family:'Geist Mono';font-size:18px;font-weight:500;margin-top:2px}
+.tog{display:flex;border:1px solid var(--rule2);border-radius:10px;overflow:hidden}.tog button{flex:1;height:36px;background:none;border:0;color:var(--ink2);font-family:'Geist Mono';font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}.tog button.on{background:var(--g);color:#140b00}
+.res{margin-top:14px;border-radius:14px;padding:16px;border:1px solid var(--rule2)}.res.ok{border-color:rgba(125,255,178,.5);background:rgba(125,255,178,.06)}.res.no{border-color:rgba(255,93,79,.5);background:rgba(255,93,79,.07)}
+.res b.h{display:block;font-size:18px;font-weight:700;letter-spacing:-.02em}.res.ok b.h{color:#7dffb2}.res.no b.h{color:#ff8b80}.res p{color:var(--ink2);font-size:13.5px;margin-top:6px}
+.kv{font-family:'Geist Mono';font-size:12.5px;margin-top:10px}.kv div{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--rule)}.kv span{color:var(--ink3)}
+.log{margin-top:12px;font-family:'Geist Mono';font-size:11.5px;color:var(--ink3);max-height:160px;overflow:auto}.log div{padding:5px 0;border-bottom:1px solid var(--rule)}.log b{color:#7dffb2;font-weight:500}.log b.x{color:#ff8b80}
+@media(max-width:1100px){.tpl{grid-template-columns:repeat(3,1fr)}.lay{grid-template-columns:1fr}}
+</style></head><body>
+<main class="wrap">
+<section class="hd"><div class="eyebrow"><b>●</b> Contract playground</div><h1>Money that <span class="it red">keeps its word.</span></h1><p>These are the six Kairos contract templates running on a JavaScript port of the chain's 16-step integer core, checked against the node's own test vectors. Pick one, set the terms, then try to break it.</p></section>
+<div class="tpl" id="tpl"></div>
+<div class="lay">
+ <div class="pan"><h3><span>Terms</span><span id="tid"></span></h3><div class="desc" id="desc"></div><div class="f" id="params"></div><div class="regs" id="regs"></div></div>
+ <div class="pan"><h3><span>The program</span><span>16 steps · ABI 3</span></h3><div class="prog" id="prog"></div></div>
+ <div class="pan"><h3><span>Make a call</span><span id="bal"></span></h3>
+  <div class="f">
+   <label class="w"><span>Who is calling</span><select id="who"></select></label>
+   <label><span>Block height</span><input id="h" type="number" min="0"></label><label><span>Fee (μKAI)</span><input id="fee" type="number" min="0" value="5"></label>
+   <label class="w"><span>Pay out (μKAI)</span><input id="pay" type="number" min="0" value="50"></label>
+   <label class="w"><span>Pay to</span><input id="to" spellcheck="false"></label>
+   <label class="w"><span>Call type</span><div class="tog"><button id="cont" class="on">Pay &amp; continue</button><button id="close">Close contract</button></div></label>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:14px"><button class="btn pri" style="flex:1;justify-content:center" onclick="call()">Run call</button><button class="btn" onclick="reset()">Reset</button></div>
+  <div id="res"></div><div class="log" id="log"></div></div>
+</div></main>
+<script src="/k.js"></script><script src="/kairos-vm.js"></script><script>chrome('/playground');
+const V = window.KairosVM; let T, P, S, BAL, TERM = false, LOG = [];
+const BALANCE0 = 10000n, isAddr = (p) => /address/.test(p.type);
+$('tpl').innerHTML = V.TEMPLATES.map((t) => `<button data-id="${t.id}"><b>${t.label.toLowerCase().replace(/(^|\s)\S/g, (c) => c.toUpperCase())}</b><span>${t.params.length} terms</span></button>`).join('');
+$('tpl').onclick = (e) => { const b = e.target.closest('button'); if (b) pick(b.dataset.id); };
+$('cont').onclick = () => { TERM = false; $('cont').className = 'on'; $('close').className = ''; $('pay').disabled = false; };
+$('close').onclick = () => { TERM = true; $('close').className = 'on'; $('cont').className = ''; $('pay').disabled = true; };
+function pick(id) { T = V.template(id); P = { ...T.defaults }; [...$('tpl').children].forEach((b) => b.classList.toggle('on', b.dataset.id === id)); $('tid').textContent = id.replace(/_/g, ' ');
+  $('desc').textContent = T.description;
+  $('params').innerHTML = T.params.map((p) => `<label class="${isAddr(p) ? 'w' : ''}"><span>${p.key.replace(/_/g, ' ')}${p.type === 'address?' ? ' (blank = anyone)' : ''}</span><input data-k="${p.key}" value="${P[p.key] ?? ''}" ${p.editable === false ? 'disabled' : ''} ${isAddr(p) ? 'spellcheck="false"' : 'type="number" min="0"'}></label>`).join('');
+  $('params').oninput = (e) => { const k = e.target.dataset.k; if (!k) return; const p = T.params.find((x) => x.key === k); P[k] = isAddr(p) ? (e.target.value.trim() || (p.type === 'address?' ? null : '')) : e.target.value; reset(); };
+  reset(); }
+function build() { try { return T.build(P); } catch (e) { return { err: e.message || String(e) }; } }
+function reset() { const b = build(); LOG = []; $('log').innerHTML = ''; $('res').innerHTML = '';
+  if (b.err) { $('prog').innerHTML = `<p style="color:#ff8b80;padding:10px 0">These terms are invalid: ${b.err}</p>`; return; }
+  S = b.state; BAL = BALANCE0; const names = [...new Set(T.params.filter(isAddr).map((p) => P[p.key]).filter(Boolean))];
+  $('who').innerHTML = names.map((n) => `<option>${n}</option>`).join('') + '<option>stranger</option>';
+  $('to').value = b.policy.claim_recipient || names[1] || names[0] || ''; const h0 = Object.entries(P).find(([k]) => /first|start|unlock|expiry/.test(k)); $('h').value = h0 ? h0[1] : 100;
+  drawProg(b.program); drawRegs(); }
+function drawProg(prog, trace) { const lines = V.describe(prog || []).map((l) => l.replace(/^d+s+/, "")), tr = trace || [];
+  $('prog').innerHTML = lines.map((l, i) => { const t = tr.find((x) => x.pc === i), keep = /^keep|: keep$|^\s*$/.test(l) && !t; return `<div class="${t ? (t.error ? 'err' : t.active ? 'hit' : 'live') : keep ? '' : 'live'}"><i>${String(i).padStart(2, '0')}</i><span>${l || 'keep'}</span></div>`; }).join('') || '<p class="dim" style="padding:10px 0">No program: this contract is enforced by its policy alone (who may close it, and when).</p>'; }
+function drawRegs() { $('regs').innerHTML = [['state0', S.state0], ['state1', S.state1], ['contract balance', BAL + ' μKAI'], ['calls made', LOG.length]].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join(''); $('bal').textContent = BAL + ' μKAI held'; }
+function call() { const b = build(); if (b.err) return; const who = $('who').value, pay = TERM ? 0n : BigInt($('pay').value || 0), fee = BigInt($('fee').value || 0), h = BigInt($('h').value || 0);
+  const amt = (x) => x == null ? 0n : typeof x === "object" ? (x.amount ?? 0n) : x;
+  const c = { height: h, fee, terminal: TERM, input: { amount: BAL, slot: 7, creation_id: 1 }, retained_slot: 7, signer: who === 'stranger' ? 'stranger' : who };
+  if (!TERM && pay > 0n) c.payout = { amount: pay, owner: $('to').value.trim() || 'anyone', slot: 8 };
+  let r; try { r = V.run(b.program, b.policy, S, c); } catch (e) { r = { ok: false, error: { code: 'Input', message: e.message } }; }
+  drawProg(b.program, r.trace);
+  if (r.ok) { BAL = TERM ? 0n : BigInt(r.retained); if (r.newState) S = r.newState; }
+  const msg = r.ok ? (TERM ? `Closed. ${amt(r.payout)} μKAI paid out.` : `Paid ${amt(r.payout)} μKAI. The contract continues with ${BAL} μKAI and updated counters.`) : `${r.error.code}${r.error.kind ? ' · ' + r.error.kind : ''}${r.error.step != null ? ' at step ' + r.error.step : ''}: ${r.error.message}${r.error.step != null ? ' → failed rule: ' + V.describe(b.program)[r.error.step].replace(/^d+s+/, '') : ''}`;
+  $('res').innerHTML = `<div class="res ${r.ok ? 'ok' : 'no'}"><b class="h">${r.ok ? 'Accepted' : 'Rejected'}${r.branch ? ' · ' + r.branch + ' branch' : ''}</b><p>${msg}</p>${r.ok ? `<div class="kv"><div><span>payout</span><b>${amt(r.payout)}</b></div><div><span>fee</span><b>${r.fee}</b></div><div><span>retained</span><b>${r.retained}</b></div><div><span>lifecycle</span><b>${r.lifecycle}</b></div></div>` : ''}</div>`;
+  LOG.unshift(`<div><b class="${r.ok ? '' : 'x'}">${r.ok ? '✓' : '✗'}</b> h=${h} · ${who} · ${TERM ? 'close' : 'pay ' + pay} → ${r.ok ? 'ok' : r.error.code}</div>`); if (!r.ok) LOG[0] = LOG[0]; $('log').innerHTML = LOG.join(''); if (!r.ok) LOG.shift(); drawRegs(); }
+pick('recurring_payment');
+</script></body></html>
