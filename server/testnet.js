@@ -6,7 +6,8 @@
 'use strict';
 const fs = require('fs'), path = require('path'), { Worker } = require('worker_threads');
 const T = require('../client/tn-core.js'), { K, I } = T, { toHex, fromHex, Sponge, capacityIv, compressWithTag, fromLE } = I;
-const DATA = process.env.DATA_PATH || path.join(__dirname, '..', 'data'); fs.mkdirSync(DATA, { recursive: true });
+let DATA = process.env.DATA_PATH || path.join(__dirname, '..', 'data');
+try { fs.mkdirSync(DATA, { recursive: true }); fs.accessSync(DATA, fs.constants.W_OK); } catch { console.error('DATA_PATH ' + DATA + ' is not writable (is the disk mounted?); using ./data, the testnet will reset on redeploy'); DATA = path.join(__dirname, '..', 'data'); fs.mkdirSync(DATA, { recursive: true }); }
 const FILE = path.join(DATA, 'testnet.json'), MU = 1_000_000n, REWARD = 16n * MU, GEN_TARGET = T.bigToLeHex(1n << 244n), DEPTH = 24;
 const FEE = { base: 5000n, input: 100n, output: 700n, growth: 2500n }, FINAL = 18;
 // ---------- persistent state ----------
@@ -81,7 +82,8 @@ function submitBlock(id, nonceHex) { const tp = templates.get(+id); if (!tp) ret
   mempool = mempool.filter((x) => !tp.txs.includes(x)); C.blocks.push(h); templates.clear(); dirty = true; return { ok: true, height: h.height, hash: h.hash }; }
 // ---------- genesis + house miner (keeps blocks flowing, funds the faucet) ----------
 const houseAddr = (i) => K.address(C.house, i);
-if (!C.blocks.length) { const tp = template(houseAddr(0)); let n = 0; for (;;) { const h = { ...tp.header, nonce_hex: n.toString(16) }; if (T.le256lt(T.powDigest(h), fromHex(h.target))) { submitBlock(tp.id, n.toString(16)); break; } n++; } }
+// genesis carries no work requirement (like the node's genesis, it is fixed, not mined against ASERT): target = max, nonce 0
+if (!C.blocks.length) { const tp = template(houseAddr(0)); tp.header.target = 'ff'.repeat(32); const r = submitBlock(tp.id, '0'); if (r.error) throw new Error('genesis: ' + r.error); try { fs.writeFileSync(FILE, JSON.stringify(C)); } catch (e) { console.error('cannot persist testnet to', FILE, e.message); } }
 let worker = null; const HOUSE = process.env.TESTNET_HOUSE_MINER !== '0';
 let houseTimer = null; const HEADSTART = +process.env.TESTNET_HEADSTART_MS || 10000;
 function houseMine() { if (!HOUSE) return; if (worker) { worker.terminate(); worker = null; } clearTimeout(houseTimer); houseTimer = setTimeout(houseStart, height() > 1 ? HEADSTART : 0); }
