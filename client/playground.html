@@ -55,8 +55,8 @@ function reset() { const b = build(); LOG = []; $('log').innerHTML = ''; $('res'
   $('who').innerHTML = names.map((n) => `<option>${n}</option>`).join('') + '<option>stranger</option>';
   $('to').value = b.policy.claim_recipient || names[1] || names[0] || ''; const h0 = Object.entries(P).find(([k]) => /first|start|unlock|expiry/.test(k)); $('h').value = h0 ? h0[1] : 100;
   drawProg(b.program); drawRegs(); }
-function drawProg(prog, trace) { const lines = V.describe(prog || []).map((l) => l.replace(/^d+s+/, "")), tr = trace || [];
-  $('prog').innerHTML = lines.map((l, i) => { const t = tr.find((x) => x.pc === i), keep = /^keep|: keep$|^\s*$/.test(l) && !t; return `<div class="${t ? (t.error ? 'err' : t.active ? 'hit' : 'live') : keep ? '' : 'live'}"><i>${String(i).padStart(2, '0')}</i><span>${l || 'keep'}</span></div>`; }).join('') || '<p class="dim" style="padding:10px 0">No program: this contract is enforced by its policy alone (who may close it, and when).</p>'; }
+function drawProg(prog, trace) { const lines = V.describe(prog || []).map((l) => l.replace(/^\d+\s+/, "")), tr = trace || [];
+  $('prog').innerHTML = lines.map((l, i) => { const t = tr.find((x) => x.pc === i), keep = /^keep$/.test(l.trim()) && !t; return `<div class="${t ? (t.error ? 'err' : t.active ? 'hit' : 'live') : keep ? '' : 'live'}"><i>${String(i).padStart(2, '0')}</i><span>${l || 'keep'}</span></div>`; }).join('') || '<p class="dim" style="padding:10px 0">No program: this contract is enforced by its policy alone (who may close it, and when).</p>'; }
 function drawRegs() { $('regs').innerHTML = [['state0', S.state0], ['state1', S.state1], ['contract balance', BAL + ' μKAI'], ['calls made', LOG.length]].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join(''); $('bal').textContent = BAL + ' μKAI held'; }
 function call() { const b = build(); if (b.err) return; const who = $('who').value, pay = TERM ? 0n : BigInt($('pay').value || 0), fee = BigInt($('fee').value || 0), h = BigInt($('h').value || 0);
   const amt = (x) => x == null ? 0n : typeof x === "object" ? (x.amount ?? 0n) : x;
