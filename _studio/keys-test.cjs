@@ -175,9 +175,16 @@ ok('blake3-official', hex(I.blake3.deriveKey(B3_CONTEXT, b3input(B3_EXT[0]), B3_
 // in-repo: noid_gui/src/secret.rs:183-199 derive_image_secret(2,2,pixels)
 {
   const px = Uint8Array.from([0x10, 0x20, 0x30, 0xff, 0x40, 0x50, 0x60, 0xff, 0x70, 0x80, 0x90, 0xff, 0xa0, 0xb0, 0xc0, 0xff]);
-  ok('photo-key', hex(I.deriveImageSecret(2, 2, px)) === '8d96ff98f464d528b9a1dd123059276dd34bf9735a5c99e2dba17273a5f8286c', 'secret.rs:192 golden image secret');
+  // The golden in secret.rs:192 was computed by UPSTREAM under the context
+  // "ParanO(1)d master secret from canonical image pixels v1" (see publish/kairos.patch:10539);
+  // the fork renamed the context but did not regenerate the golden, so the Rust test is stale.
+  // Reproducing it with the upstream context verifies the exact byte layout + BLAKE3 derive_key.
+  const G = '8d96ff98f464d528b9a1dd123059276dd34bf9735a5c99e2dba17273a5f8286c';
+  ok('photo-key', hex(I.deriveImageSecret(2, 2, px, 'ParanO(1)d master secret from canonical image pixels v1')) === G, 'secret.rs:192 golden (upstream context) reproduced');
+  ok('photo-key', hex(I.deriveImageSecret(2, 2, px)) !== G, 'Kairos context differs from stale golden (expected)');
+  console.log('  info: Kairos-context image secret for that 2x2 fixture = ' + hex(I.deriveImageSecret(2, 2, px)));
   const ch = px.slice(); ch[5] ^= 1;
-  ok('photo-key', hex(I.deriveImageSecret(2, 2, ch)) !== '8d96ff98f464d528b9a1dd123059276dd34bf9735a5c99e2dba17273a5f8286c', 'pixel change changes secret');
+  ok('photo-key', hex(I.deriveImageSecret(2, 2, ch, 'ParanO(1)d master secret from canonical image pixels v1')) !== G, 'pixel change changes secret');
 }
 { // validation rules (secret.rs:110-127, tests :261-279)
   let e1 = ''; try { K.fromPixels(Uint8Array.from([255, 0, 0, 255]), 1, 1); } catch (e) { e1 = e.message; }

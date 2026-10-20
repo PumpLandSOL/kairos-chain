@@ -437,8 +437,8 @@
 
   function u32le(v) { return Uint8Array.of(v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255); }
   /** derive_image_secret (secret.rs:141-149): "RGBA8" || w u32le || h u32le || len u64le || rgba. */
-  function deriveImageSecret(w, h, rgba) {
-    var hh = blake3.deriveKeyHasher(IMAGE_SECRET_CONTEXT);
+  function deriveImageSecret(w, h, rgba, context) {
+    var hh = blake3.deriveKeyHasher(context || IMAGE_SECRET_CONTEXT);
     hh.update(asciiBytes('RGBA8')); hh.update(u32le(w)); hh.update(u32le(h));
     var len = rgba.length, lenBytes = new Uint8Array(8);
     for (var i = 0; i < 8; i++) { lenBytes[i] = len % 256; len = Math.floor(len / 256); }

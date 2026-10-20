@@ -1,0 +1,67 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Photo Key wallet · Kairos Chain</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/k.css"><link rel="stylesheet" href="/kairos.css">
+<meta name="description" content="Turn a photo into a Kairos wallet. Your image is read in your browser, never uploaded, and hashed into a 256-bit secret and your k1 address.">
+<meta property="og:title" content="Your wallet can be a photograph."><meta property="og:image" content="/og.png">
+<style>
+.hd{padding:50px 0 10px}.hd h1{font-weight:800;letter-spacing:-.055em;line-height:.92;font-size:clamp(46px,6vw,92px);margin-top:16px}.hd p{font-size:18px;color:var(--ink2);max-width:700px;margin-top:16px}
+.lay{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:26px 0 30px;align-items:start}.pan{border:1px solid var(--rule2);border-radius:20px;background:var(--card);padding:22px}
+.pan h3{font-family:'Geist Mono';font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px}
+.drop{border:1.5px dashed var(--rule2);border-radius:16px;min-height:300px;display:grid;place-items:center;text-align:center;cursor:pointer;transition:.2s;position:relative;overflow:hidden;padding:20px}.drop:hover,.drop.ov{border-color:var(--gold);background:rgba(255,195,90,.04)}
+.drop canvas{max-width:100%;max-height:340px;border-radius:10px;image-rendering:pixelated}.drop b{display:block;font-size:20px;font-weight:700;letter-spacing:-.02em}.drop span{color:var(--ink3);font-size:13.5px}
+.or{display:flex;align-items:center;gap:12px;color:var(--ink3);font-family:'Geist Mono';font-size:11px;letter-spacing:.2em;margin:16px 0}.or::before,.or::after{content:'';flex:1;height:1px;background:var(--rule)}
+.out{display:none}.out.on{display:block}.addr{font-family:'Geist Mono';font-size:15px;word-break:break-all;padding:16px;border-radius:14px;border:1px solid rgba(255,195,90,.45);background:rgba(255,195,90,.06);cursor:pointer;line-height:1.5}.addr:hover{border-color:var(--gold)}
+.lbl{font-family:'Geist Mono';font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:16px 0 6px;display:flex;justify-content:space-between}
+.sec{font-family:'Geist Mono';font-size:13px;word-break:break-all;padding:14px;border-radius:12px;border:1px solid rgba(255,93,79,.35);background:rgba(255,93,79,.05);filter:blur(6px);transition:.25s;cursor:pointer;user-select:none}.sec.show{filter:none;user-select:all}
+.kid{font-family:'Geist Mono';font-size:16px;color:var(--gold)}
+.more{margin-top:8px;font-family:'Geist Mono';font-size:12.5px}.more div{display:grid;grid-template-columns:28px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--rule);color:var(--ink2);word-break:break-all;cursor:pointer}.more div:hover{color:var(--fg)}
+.warn{border-left:3px solid #ff5d4f;background:rgba(255,93,79,.06);border-radius:0 12px 12px 0;padding:12px 16px;font-size:13.5px;color:var(--ink2);margin-top:16px}.warn b{color:var(--fg)}
+.how{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:10px 0 80px}.how div{border:1px solid var(--rule);border-radius:16px;padding:18px}.how i{font-style:normal;font-family:'Geist Mono';color:var(--gold);font-size:12px}.how b{display:block;margin-top:8px;font-size:15.5px}.how p{color:var(--ink3);font-size:13px;margin-top:6px}
+.chk input{width:100%;height:46px;border-radius:12px;border:1px solid var(--rule2);background:rgba(4,5,10,.6);color:var(--fg);font-family:'Geist Mono';font-size:13px;padding:0 14px;outline:none}.chk p{font-size:13px;margin-top:8px;font-family:'Geist Mono'}
+@media(max-width:900px){.lay,.how{grid-template-columns:1fr}}
+</style></head><body>
+<main class="wrap">
+<section class="hd"><div class="eyebrow"><b>●</b> Photo Key wallet</div><h1>Your wallet can be<br><span class="it red">a photograph.</span></h1><p>Drop a private photo. It's read in your browser and never uploaded. Its exact pixels become a 256-bit secret, and that secret becomes your Kairos <b style="color:var(--fg)">k1</b> address. Change one pixel and you get a different wallet.</p></section>
+<div class="lay">
+ <div class="pan"><h3>1 · Your key</h3>
+  <label class="drop" id="drop"><input type="file" id="file" accept="image/png" hidden><div id="dz"><b>Drop a PNG photo here</b><span>or click to choose · read locally, never uploaded</span></div></label>
+  <div class="or">OR</div><button class="btn" style="width:100%;justify-content:center" onclick="rnd()">Generate a random secret instead</button>
+  <div class="warn"><b>PNG only, on purpose.</b> JPEG and other lossy formats decode slightly differently in each app, which would give a different wallet. Use an original PNG and keep the exact file: <b>the photo is your key.</b></div></div>
+ <div class="pan"><h3>2 · Your Kairos wallet</h3>
+  <div id="empty" style="color:var(--ink3);padding:40px 0;text-align:center">Your address appears here.</div>
+  <div class="out" id="out">
+   <div class="lbl"><span>Main address · k1</span><span>click to copy</span></div><div class="addr" id="a0" onclick="copy(this.textContent)"></div>
+   <div class="lbl"><span>Key ID</span><span>compare this in the desktop wallet</span></div><div class="kid" id="kid"></div>
+   <div class="lbl"><span>Master secret · back this up</span><span>click to reveal</span></div><div class="sec" id="sec" onclick="this.classList.toggle('show')"></div>
+   <div class="lbl"><span>More addresses from the same key</span><span id="mt"></span></div><div class="more" id="more"></div>
+   <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap"><button class="btn" onclick="moreAddr()">+ next address</button><button class="btn" onclick="copy($('sec').textContent)">Copy secret</button><a class="btn pri" id="tw" target="_blank" rel="noopener">Post my address</a></div>
+   <div class="warn"><b>Anyone with the photo or the master secret controls this wallet.</b> Nothing is stored or sent anywhere. Close the tab and it's gone from this page.</div></div></div>
+</div>
+<div class="pan chk" style="margin-bottom:20px"><h3>Check an address</h3><input id="chk" placeholder="paste a k1… address" spellcheck="false"><p id="chkr" class="dim">Checksum and format are verified locally.</p></div>
+<div class="how"><div><i>01</i><b>Pixels, not the file</b><p>Decoded to exact RGBA pixels. Metadata is ignored.</p></div><div><i>02</i><b>BLAKE3 derive-key</b><p>Width, height and pixels hash into a 256-bit master secret.</p></div><div><i>03</i><b>Poseidon2b</b><p>The master derives spend secrets; each hashes to an address.</p></div><div><i>04</i><b>No public key</b><p>On Kairos you prove you know the secret with a zero-knowledge proof. Nothing to sign.</p></div></div>
+</main>
+<script src="/k.js"></script><script src="/kairos-keys.js"></script><script>chrome('/wallet');
+const K = window.KairosKeys; let M = null, N = 1;
+function showKey(masterHex, keyId) { M = masterHex; N = 1; $('empty').style.display = 'none'; $('out').classList.add('on');
+  const a = K.address(M, 0); $('a0').textContent = a; $('kid').textContent = keyId || K.keyId(M); $('sec').textContent = M; $('sec').classList.remove('show'); $('more').innerHTML = ''; $('mt').textContent = '';
+  $('tw').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(`My Kairos Chain address, made from a photo in my browser:\n\n${a}\n\nNo public key. No signature. Just a secret and a zero-knowledge proof.\n\nkairoschain.xyz/wallet\n\n$KAI`); }
+function moreAddr() { if (!M) return; const a = K.address(M, N); $('more').insertAdjacentHTML('beforeend', `<div onclick="copy('${a}')"><span style="color:var(--gold)">${N}</span><span>${a}</span></div>`); $('mt').textContent = N + 1 + ' total'; N++; }
+function rnd() { const m = K.randomMaster(); showKey(m); $('dz').innerHTML = '<b>Random secret generated</b><span>back up the master secret: there is no photo to recover from</span>'; }
+async function handle(f) {
+  if (!f) return; if (f.type !== 'image/png' && !/\.png$/i.test(f.name)) { toast('Use a PNG file'); return; }
+  $('dz').innerHTML = '<b>Reading pixels…</b><span>in your browser</span>';
+  try { const buf = new Uint8Array(await f.arrayBuffer()); const hw = buf[16] << 24 | buf[17] << 16 | buf[18] << 8 | buf[19], hh = buf[20] << 24 | buf[21] << 16 | buf[22] << 8 | buf[23], depth = buf[24], ctype = buf[25];
+    if (depth !== 8 || ![2, 6].includes(ctype)) throw new Error('Use an 8-bit RGB or RGBA PNG (this one is ' + depth + '-bit, colour type ' + ctype + ').');
+    const bmp = await createImageBitmap(f, { imageOrientation: 'none', premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
+    if (bmp.width !== hw || bmp.height !== hh) throw new Error('This browser changed the image size while decoding. Try another browser.');
+    const cv = document.createElement('canvas'); cv.width = bmp.width; cv.height = bmp.height; const g = cv.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true }); g.drawImage(bmp, 0, 0);
+    const px = g.getImageData(0, 0, cv.width, cv.height).data; for (let i = 3; i < px.length; i += 4) if (px[i] !== 255) throw new Error('Use a fully opaque PNG (no transparency), so every app reads the same pixels.');
+    await new Promise((r) => setTimeout(r, 30)); const r = K.fromPixels(px, cv.width, cv.height);
+    const pv = document.createElement('canvas'), sc = Math.min(1, 340 / cv.height, 480 / cv.width); pv.width = cv.width * sc; pv.height = cv.height * sc; pv.getContext('2d').drawImage(cv, 0, 0, pv.width, pv.height);
+    $('dz').innerHTML = ''; $('dz').append(pv); $('dz').insertAdjacentHTML('beforeend', `<span style="display:block;margin-top:10px">${cv.width} × ${cv.height} · ${f.name}</span>`); showKey(r.masterHex, r.keyId);
+  } catch (e) { $('dz').innerHTML = `<b style="color:#ff8b80">That photo didn't work</b><span>${(e.message || String(e)).replace(/[<>&]/g, '')}</span>`; } }
+$('file').onchange = (e) => handle(e.target.files[0]);
+const d = $('drop'); ['dragenter', 'dragover'].forEach((t) => d.addEventListener(t, (e) => { e.preventDefault(); d.classList.add('ov'); })); ['dragleave', 'drop'].forEach((t) => d.addEventListener(t, (e) => { e.preventDefault(); d.classList.remove('ov'); }));
+d.addEventListener('drop', (e) => handle(e.dataTransfer.files[0]));
+$('chk').oninput = () => { const v = $('chk').value.trim(); if (!v) { $('chkr').textContent = 'Checksum and format are verified locally.'; $('chkr').style.color = ''; return; } const r = K.validateAddress(v);
+  $('chkr').textContent = r.valid ? '✓ valid Kairos address' + (r.canonical === false ? ' (legacy checksum)' : '') : '✗ ' + r.error; $('chkr').style.color = r.valid ? '#7dffb2' : '#ff8b80'; };
+</script></body></html>
