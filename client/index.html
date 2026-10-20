@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Kairos Chain · the present proves the past</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/k.css">
+<title>Kairos · the proof-native Layer 1 blockchain</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/k.css">
 <meta name="description" content="Kairos Chain is a proof-native Layer 1. Every block carries one recursive proof of the entire chain, ordered by proof of work. No signatures. No replay. No trusted setup.">
-<meta property="og:title" content="Kairos Chain: the present proves the past"><meta property="og:description" content="A proof-native Layer 1. Every block carries one recursive proof of the entire chain."><meta property="og:image" content="/og.png"><meta name="twitter:card" content="summary_large_image">
+<meta property="og:title" content="Kairos: the proof-native Layer 1 blockchain"><meta property="og:description" content="A proof-native Layer 1. Every block carries one recursive proof of the entire chain."><meta property="og:image" content="/og.png"><meta name="twitter:card" content="summary_large_image">
 <style>
 html{scroll-snap-type:y proximity}
 #chrono{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
@@ -10,7 +10,7 @@ html{scroll-snap-type:y proximity}
 main{position:relative;z-index:2}
 .ch{min-height:100vh;scroll-snap-align:start;display:grid;grid-template-columns:minmax(0,660px) minmax(0,1fr);gap:30px;align-items:center;padding:110px 150px 110px 64px;max-width:1720px;margin:0 auto;position:relative}
 .ch h2,.ch h1{font-weight:800;letter-spacing:-.055em;line-height:.9;font-size:clamp(44px,5.3vw,86px);margin-top:22px}
-.ch h1{font-size:clamp(56px,7.3vw,118px)}
+.ch h1{font-size:clamp(84px,11vw,190px)}.ch h1 .tag{display:block;font-size:clamp(30px,2.9vw,50px);letter-spacing:-.045em;line-height:1.08;margin-top:18px}
 .ch .lead{color:var(--mu);font-size:17.5px;margin-top:24px;max-width:560px;line-height:1.6}.ch .lead b{color:var(--fg);font-weight:600}
 .spec{margin-top:28px;border-top:1px solid var(--line);max-width:540px}.spec div{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14.5px}
 .spec span{font-family:'Geist Mono';font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);padding-top:3px}.spec b{font-weight:500}
@@ -58,8 +58,8 @@ const box = (x, y, w, h, title, sub, c = D2, d = 0, glow = '') => `<g class="ap"
 const svg = (inner) => `<svg viewBox="0 0 640 560">${inner}</svg>`;
 // ---------- chapters ----------
 const CH = [
- { id: 'cover', k: 'Kairos Chain · proof-native layer 1', h: 'The present<br><span class="gt">proves the past.</span>', big: 1,
-   p: 'Every Kairos block carries <b>one recursive proof that the entire chain is valid</b>, from genesis to now. Nodes verify instead of replaying. Proof of work only decides the order.',
+ { id: 'cover', k: 'Kairos Chain · $KAI', h: 'Kairos.<span class="tag">The proof‑native <span class="gt">Layer 1 blockchain.</span></span>', big: 1,
+   p: 'On Kairos, <b>every block proves the entire chain is valid</b>. Anyone can verify all of it in about a second, with no signatures to steal and no trusted setup.',
    tri: [['O(1) sync', 'verify one proof, not all history'], ['Keyless', 'ownership proven, never signed'], ['Living state', 'storage follows live use']],
    cta: [['Why it matters →', '#debt', 1], ['Whitepaper', '/whitepaper']],
    s: () => { let o = ''; const ins = [[70, 150, G2], [56, 230, B], [70, 310, G], [56, 390, B], [70, 470, G2]];
@@ -74,7 +74,7 @@ const CH = [
    s: () => { let o = T(40, 70, 'HISTORY DEPENDENCY', R) + T(40, 86, 'GENESIS → NOW', 'rgba(244,241,234,.35)'); for (let i = 0; i < 46; i++) { const h = 12 + i * i * .13, x = 40 + i * 10.6; o += `<rect class="ap" ${at(.02 * i)} x="${x}" y="${420 - h}" width="7" height="${h}" rx="1.5" fill="${i > 40 ? R : `rgba(255,93,79,${.12 + i * .012})`}"/>`; }
      o += L(40, 424, 600, 424, D2) + T(40, 446, 'BLOCK 0') + T(600, 446, 'BLOCK 9,000,000+', 'rgba(244,241,234,.55)', 'end') + `<g class="ap" ${at(1)}>${Rc(440, 120, 160, 70, R, 'rgba(30,10,10,.85)', 12)}${T(458, 148, 'STATE', W)}${T(458, 166, 'DERIVED FROM REPLAY', R, 'start', 9)}</g>` + P('M520 190 L520 250', R, 1, 'fl');
      return svg(o + `<g class="ap" ${at(1.2)}>${['REPLAY', 'SNAPSHOT', 'CHECKPOINT'].map((t, i) => Rc(60 + i * 180, 480, 160, 40, i === 2 ? R : D2, 'rgba(10,13,22,.85)', 10) + T(140 + i * 180, 504, t, i === 2 ? R : W, 'middle')).join('')}</g>`); } },
- { id: 'inversion', k: '02 · the inversion', h: 'Kairos flips it.<br><span class="gt">The present<br>proves the past.</span>', p: 'Validity no longer comes from replaying history. It comes from a <b>recursive proof from genesis</b>, carried by the newest block. Spent outputs free their slots, so storage follows live use, not chain age.',
+ { id: 'inversion', k: '02 · the inversion', h: 'Kairos flips it.<br><span class="gt">One proof<br>covers it all.</span>', p: 'Validity no longer comes from replaying history. It comes from a <b>recursive proof from genesis</b>, carried by the newest block. Spent outputs free their slots, so storage follows live use, not chain age.',
    spec: [['state holds', 'Live outputs, not lifetime transactions'], ['spent outputs', 'Clear their slot for reuse'], ['chain age adds', 'No replay debt']],
    s: () => { let o = T(30, 60, 'REPLAY CHAINS · COST BY AGE', R); for (let i = 0; i < 40; i++) { const h = 6 + i * 3.1; o += `<rect class="ap" ${at(.015 * i)} x="${30 + i * 14.5}" y="${230 - h}" width="10" height="${h}" rx="1.5" fill="rgba(255,93,79,${.15 + i * .012})"/>`; }
      o += L(30, 234, 610, 234, D2) + T(30, 300, 'KAIROS · COST BY AGE', G); for (let i = 0; i < 40; i++) { const last = i === 39; o += `<rect class="ap" ${at(.6 + .015 * i)} x="${30 + i * 14.5}" y="${last ? 330 : 470}" width="10" height="${last ? 140 : 4}" rx="1.5" fill="${last ? G : 'rgba(244,241,234,.18)'}" style="${last ? "filter:drop-shadow(0 0 10px rgba(255,195,90,.6))" : ""}"/>`; }
