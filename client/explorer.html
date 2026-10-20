@@ -1,0 +1,42 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Explorer · Kairos Chain</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/k.css"><link rel="stylesheet" href="/kairos.css">
+<meta name="description" content="Kairos Chain explorer: live blocks, recursive proofs, miners.">
+<style>
+.hd{padding:50px 0 10px;display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap}.hd h1{font-weight:800;letter-spacing:-.055em;line-height:.92;font-size:clamp(44px,5.6vw,84px);margin-top:16px}
+.live{display:inline-flex;align-items:center;gap:8px;font-family:'Geist Mono';font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:7px 12px;border-radius:99px;border:1px solid var(--rule2)}.live i{width:8px;height:8px;border-radius:50%;background:#7dffb2;box-shadow:0 0 10px #7dffb2;animation:bl 1.4s infinite}@keyframes bl{50%{opacity:.3}}
+.live.off i{background:#6b6a66;box-shadow:none;animation:none}
+.search{display:flex;gap:10px;margin-top:26px}.search input{flex:1;height:52px;border-radius:14px;border:1px solid var(--rule2);background:var(--card);color:var(--fg);font-family:'Geist Mono';font-size:14px;padding:0 18px;outline:none}.search input:focus{border-color:var(--gold)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}.stats div{border:1px solid var(--rule2);border-radius:16px;padding:18px 20px;background:var(--card)}.stats span{font-family:'Geist Mono';font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}.stats b{display:block;font-size:30px;font-weight:700;letter-spacing:-.03em;margin-top:6px}.stats b.g{background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cols{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin:18px 0 80px}.pan{border:1px solid var(--rule2);border-radius:18px;background:var(--card);padding:6px 20px 12px}.pan h3{font-family:'Geist Mono';font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);padding:16px 0 10px;display:flex;justify-content:space-between}
+.bk{display:grid;grid-template-columns:96px 1fr 120px;gap:14px;padding:13px 0;border-top:1px solid var(--rule);align-items:center;font-size:14px;cursor:pointer}.bk:hover b{color:var(--gold)}.bk b{font-family:'Geist Mono';font-weight:500}.bk .m{font-family:'Geist Mono';font-size:12px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bk .t{text-align:right;color:var(--ink3);font-size:12.5px}
+.bk.new{animation:nw 1.6s ease}@keyframes nw{0%{background:rgba(255,195,90,.18)}100%{background:transparent}}
+.mn{display:grid;grid-template-columns:30px 1fr 70px;gap:10px;padding:11px 0;border-top:1px solid var(--rule);font-size:13px;align-items:center}.mn .a{font-family:'Geist Mono';font-size:12px;overflow:hidden;text-overflow:ellipsis}.mn b{text-align:right;font-family:'Geist Mono'}.mn .r{color:var(--gold);font-family:'Geist Mono'}
+.det{border:1px solid var(--gold);border-radius:18px;background:rgba(14,12,8,.9);padding:24px;margin-top:18px;display:none}.det.on{display:block}.det pre{font-family:'Geist Mono';font-size:12.5px;white-space:pre-wrap;word-break:break-all;color:var(--ink2);line-height:1.7}
+.off-card{border:1px solid var(--rule2);border-radius:22px;background:var(--card);padding:56px 40px;text-align:center;margin:30px 0 90px}.off-card h2{font-weight:800;letter-spacing:-.05em;font-size:clamp(34px,4vw,56px)}.off-card p{color:var(--ink2);max-width:560px;margin:14px auto 0}
+@media(max-width:900px){.stats{grid-template-columns:1fr 1fr}.cols{grid-template-columns:1fr}.bk{grid-template-columns:80px 1fr}.bk .t{display:none}}
+</style></head><body>
+<main class="wrap">
+<section class="hd"><div><div class="eyebrow"><b>●</b> Explorer</div><h1>Kairos <span class="it red">testnet.</span></h1></div><span class="live off" id="lv"><i></i><span id="lvt">connecting</span></span></section>
+<div id="app"></div>
+</main>
+<script src="/k.js"></script><script>chrome('/explorer');
+const API = (KAI.api || '') + '/api/explorer', KAIu = (m) => (Number(BigInt(m)) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 }), sh = (s, a = 10, b = 6) => s && s.length > a + b ? s.slice(0, a) + '…' + s.slice(-b) : s || '';
+const ago = (t) => { const s = Math.max(0, Math.round(Date.now() / 1000 - t)); return s < 60 ? s + 's ago' : s < 3600 ? Math.floor(s / 60) + 'm ago' : Math.floor(s / 3600) + 'h ago'; };
+let lastTop = 0, shell = false;
+function render(s) {
+  if (!s.online) { $('lv').className = 'live off'; $('lvt').textContent = 'offline';
+    $('app').innerHTML = `<div class="off-card"><div class="eyebrow"><b>●</b> testnet</div><h2>The first Kairos blocks<br><span class="it red">are coming.</span></h2><p>This explorer reads straight from a Kairos node. When the testnet is running, every block, its recursive proof and its miner appear here live.</p><div style="margin-top:26px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><a class="btn pri" href="/docs#mining">How mining works</a><a class="btn" href="${KAI.gh}" target="_blank" rel="noopener">Node source</a></div></div>`; shell = false; return; }
+  $('lv').className = 'live'; $('lvt').textContent = 'live · block ' + s.height.toLocaleString();
+  if (!shell) { $('app').innerHTML = `<div class="search"><input id="q" placeholder="Search a block height, txid or k1… address" spellcheck="false"><button class="btn pri" onclick="find()">Search</button></div><div class="det" id="det"></div><div class="stats" id="st"></div>
+     <div class="cols"><div class="pan"><h3><span>Latest blocks</span><span>each one proves all before it</span></h3><div id="bl"></div></div><div class="pan"><h3><span>Miners</span><span id="msc"></span></h3><div id="mn"></div></div></div>`; $('q').onkeydown = (e) => e.key === 'Enter' && find(); shell = true; }
+  $('st').innerHTML = [['Block height', s.height.toLocaleString(), 1], ['Avg block time', s.avgBlockSec ? s.avgBlockSec.toFixed(1) + ' s' : '—'], ['Terminal proof', s.terminalBytes ? (s.terminalBytes / 1e6).toFixed(2) + ' MB' : '—'], ['Proofs to verify all', '1', 1], ['Live outputs', s.activeSlots.toLocaleString()], ['KAI in existence', KAIu(s.supply)], ['Next reward', KAIu(s.reward) + ' KAI'], ['Peers', s.peers ?? '—']].map(([k, v, g]) => `<div><span>${k}</span><b class="${g ? 'g' : ''}">${v}</b></div>`).join('');
+  $('bl').innerHTML = s.recent.map((b) => `<div class="bk ${b.height > lastTop && lastTop ? 'new' : ''}" onclick="block(${b.height})"><b>#${b.height.toLocaleString()}</b><span class="m">${sh(b.miner, 14, 8)} · ${b.active_slot_count.toLocaleString()} live outputs</span><span class="t">${ago(b.timestamp)}</span></div>`).join(''); lastTop = s.height; }
+async function block(h) { const d = await (await fetch(API + '/block/' + h)).json(); show(`Block #${h}`, d); }
+async function find() { const q = $('q').value.trim(); if (!q) return; let r;
+  if (/^\d+$/.test(q)) return block(+q); if (/^[0-9a-f]{64}$/i.test(q)) r = await fetch(API + '/tx/' + q.toLowerCase()); else if (/^k1/.test(q)) r = await fetch(API + '/address/' + q); else return toast('Enter a height, a 64-char txid or a k1 address');
+  show(q, await r.json()); }
+function show(t, d) { const e = $('det'); e.classList.add('on'); e.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">${t.length > 40 ? sh(t, 16, 10) : t}</b><button class="btn" style="height:34px" onclick="$('det').classList.remove('on')">close</button></div><pre>${JSON.stringify(d, null, 2).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))}</pre>`; e.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+async function tick() { try { render(await (await fetch(API + '/summary')).json()); } catch { render({ online: false }); }
+  if (shell) try { const m = await (await fetch(API + '/miners')).json(); $('msc').textContent = 'blocks 1–' + m.scannedTo.toLocaleString(); $('mn').innerHTML = m.miners.slice(0, 15).map((x) => `<div class="mn"><span class="r">${x.rank}</span><span class="a">${sh(x.miner, 14, 8)}</span><b>${x.blocks}</b></div>`).join('') || '<p class="dim" style="padding:14px 0">counting…</p>'; } catch {} }
+tick(); setInterval(tick, 5000);
+</script></body></html>
