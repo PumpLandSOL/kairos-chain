@@ -41,7 +41,7 @@
  <div class="tng"><div><div class="lbl"><span>Balance · test KAIROS</span></div><div style="font-size:44px;font-weight:800;letter-spacing:-.04em" id="tnb">0</div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn pri" onclick="drip()">Get 25 test KAIROS</button><a class="btn" id="mlink" href="/mine">Mine to this wallet</a></div>
   <label style="display:flex;gap:8px;align-items:center;margin-top:14px;font-size:13px;color:var(--ink3)"><input type="checkbox" id="rem"> remember this key on this device</label><p class="dim" id="tnm" style="font-size:13px;margin-top:10px"></p></div>
-  <div><div class="lbl"><span>Send</span></div><input class="inp2" id="sto" placeholder="to k1…" spellcheck="false"><input class="inp2" id="samt" placeholder="amount in KAIROS" inputmode="decimal" style="margin-top:8px"><button class="btn" style="margin-top:10px;width:100%;justify-content:center" onclick="sendTx()">Send</button>
+  <div><div class="lbl"><span>Send</span></div><input class="inp2" id="sto" placeholder="to k1… or name.kairos" spellcheck="false"><input class="inp2" id="samt" placeholder="amount in KAIROS" inputmode="decimal" style="margin-top:8px"><button class="btn" style="margin-top:10px;width:100%;justify-content:center" onclick="sendTx()">Send</button>
   <div class="more" id="tna" style="margin-top:12px"></div></div></div>
  <p class="dim" style="font-size:12.5px;margin-top:14px">On the web testnet a spend reveals the spend secret of a one-time address, so the wallet moves your change to the next fresh address and retires the old one. Mainnet spends use zero-knowledge proofs instead.</p></div>
 <div class="pan chk" style="margin-bottom:20px"><h3>Check an address</h3><input id="chk" placeholder="paste a k1… address" spellcheck="false"><p id="chkr" class="dim">Checksum and format are verified locally.</p></div>
@@ -84,7 +84,8 @@ async function scan() { if (!M) return; $('tn').style.display = 'block'; const o
   try { const sm = await api('/api/explorer/summary'); $('tnh').textContent = 'block ' + sm.height; } catch {} }
 function recvAddr() { const lastUsed = ACC.reduce((m, x) => (x.used ? x.i : m), -1); return K.address(M, lastUsed + 1); }
 async function drip() { const r = await api('/api/tn/faucet', { to: recvAddr() }); $('tnm').textContent = r.error ? r.error : 'Faucet sent 25 test KAIROS. It lands in the next block (about 30 s).'; setTimeout(scan, 1500); }
-async function sendTx() { const to = $('sto').value.trim(), v = K.validateAddress(to); if (!v.valid) return toast('Enter a valid k1 address');
+async function sendTx() { let to = $('sto').value.trim(); if (/^[a-z0-9-]{3,20}(\.kairos)?$/i.test(to)) { const n = await api('/api/tn/name/' + encodeURIComponent(to)); if (n.error) return toast(to + ' is not a registered .kairos name'); to = n.owner; toast('Sending to ' + n.name + '.kairos → ' + to.slice(0, 14) + '…'); }
+  const v = K.validateAddress(to); if (!v.valid) return toast('Enter a valid k1 address or .kairos name');
   const amt = BigInt(Math.round(parseFloat($('samt').value) * 1e6) || 0); if (amt <= 0n) return toast('Enter an amount');
   const fee8 = BigInt((await api('/api/tn/fee?in=8&out=2')).min), src = ACC.find((x) => !x.retired && x.coins.length && x.coins.slice(0, 8).reduce((t, c) => t + BigInt(c.amount), 0n) >= amt + fee8);
   if (!src) return toast('Not enough on one address: a send uses up to 8 coins from a single address');

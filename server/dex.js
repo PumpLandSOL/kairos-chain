@@ -31,6 +31,13 @@ function apply(D, op, ctx) {
     D.assets[id] = a; return { spent: cost, received: 0n, burned: CREATE_FEE, note: `created ${ticker} (${mode})`, asset: id };
   }
   // ---- native NFTs: one-of-one items with on-chain generative art seeds, atomic listing and purchase ----
+  // ---- .kairos names: human-readable names that follow their owner as one-time addresses rotate ----
+  if (op.type === 'regName' || op.type === 'transferName') { D.names = D.names || {}; const nm = String(op.name || '').toLowerCase().replace(/\.kairos$/, '');
+    if (op.type === 'regName') { if (!/^[a-z0-9](?:[a-z0-9-]{1,18}[a-z0-9])$/.test(nm)) throw new Error('names are 3-20 characters: a-z, 0-9 and dashes'); if (D.names[nm]) throw new Error(nm + '.kairos is taken');
+      const cost = nm.length === 3 ? 5_000_000n : nm.length === 4 ? 2_000_000n : 1_000_000n; if (ctx.kaiIn < cost) throw new Error('registering ' + nm + '.kairos costs ' + Number(cost) / 1e6 + ' KAIROS');
+      D.names[nm] = { name: nm, owner: o, h: ctx.h, ts: ctx.ts, cost: cost.toString(), transfers: 0 }; return { spent: cost, received: 0n, burned: cost, note: 'registered ' + nm + '.kairos' }; }
+    const n = D.names[nm]; if (!n) throw new Error('unknown name'); if (n.owner !== o) throw new Error('you do not own ' + nm + '.kairos'); if (!/^[0-9a-f]{64}$/.test(op.toHex || '')) throw new Error('bad recipient');
+    n.owner = op.toHex; n.transfers++; return { spent: 0n, received: 0n, burned: 0n, note: 'transferred ' + nm + '.kairos' }; }
   if (op.type === 'mintNft') { D.nfts = D.nfts || {}; const name = String(op.name || '').trim().slice(0, 32), col = String(op.collection || '').trim().slice(0, 32) || 'Orbits';
     if (name.length < 2) throw new Error('name needs at least 2 characters'); const seed = String(op.seed || '').toLowerCase(); if (!/^[0-9a-f]{8,32}$/.test(seed)) throw new Error('bad art seed');
     const palette = Math.max(0, Math.min(7, op.palette | 0)), cost = NFT_FEE; if (ctx.kaiIn < cost) throw new Error('minting costs 0.5 KAIROS');
@@ -88,7 +95,7 @@ function apply(D, op, ctx) {
   throw new Error('unknown operation');
 }
 // move every token balance and LP share from one owner to another (the web-testnet one-time-address model)
-function migrate(D, from, to) { for (const n of Object.values(D.nfts || {})) if (n.owner === from) n.owner = to; for (const id of Object.keys(D.bal)) { const v = get(D, id, from); if (v) { put(D, id, from, 0n); add(D, id, to, v); } }
+function migrate(D, from, to) { for (const n of Object.values(D.names || {})) if (n.owner === from) n.owner = to; for (const n of Object.values(D.nfts || {})) if (n.owner === from) n.owner = to; for (const id of Object.keys(D.bal)) { const v = get(D, id, from); if (v) { put(D, id, from, 0n); add(D, id, to, v); } }
   for (const a of Object.values(D.assets)) if (a.pool && a.pool.lps[from]) { a.pool.lps[to] = (BigInt(a.pool.lps[to] || '0') + BigInt(a.pool.lps[from])).toString(); delete a.pool.lps[from]; } }
 function view(D, a) { const p = priceOf(a), raised = BigInt(a.raised || '0');
   return { id: a.id, name: a.name, ticker: a.ticker, desc: a.desc, color: a.color, mode: a.mode, created: a.created, ts: a.ts, supply: a.supply, backing: a.backing, reserve: a.reserve, burned: a.burned, graduated: a.graduated, raised: a.raised, raiseTarget: RAISE.toString(),

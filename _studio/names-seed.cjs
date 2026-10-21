@@ -1,0 +1,6 @@
+const K = require('../client/kairos-keys.js'), T = require('../client/tn-core.js'), B = 'http://localhost:8268';
+const j = async (p, b, n = 0) => { try { return await (await fetch(B + p, b ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) } : {})).json(); } catch (e) { if (n > 5) throw e; await new Promise((r) => setTimeout(r, 500)); return j(p, b, n + 1); } };
+async function mine(to) { const tp = await j('/api/tn/template?miner=' + to); const f = T.powFields(tp.header), tgt = T.I.fromHex(tp.header.target); for (let n = 0n; ; n++) { f[10] = T.u128(n); if (T.le256lt(T.powDigestFields(f), tgt)) return j('/api/tn/submit', { id: tp.id, nonce: n.toString(16) }); } }
+async function reg(M, list) { let i = 0; await mine(K.address(M, 0)); for (const n of list) { await j('/api/tn/op', { secret: K.spendSecret(M, i), next: K.address(M, i + 1), op: { type: 'regName', name: n } }).then((r) => r.error && console.log(n, r.error)); i++; await mine(K.address(K.randomMaster(), 0)); } }
+(async () => { 
+  const M = K.randomMaster(); await reg(M, ['kairos', 'zk-anon', 'block-one']); require('fs').writeFileSync('shots/names-master.txt', M); console.log('seeded'); })();
