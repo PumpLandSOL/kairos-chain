@@ -1,5 +1,5 @@
 // shared chrome for every Kairos Chain page (dark theme)
-const KAI = { ca: '', x: 'https://x.com/KairosLayer1', gh: 'https://github.com/kairoschain/kairos', api: '', domain: 'kairoschain.org', fork: 'https://github.com/proof-native/parano1d' }; // set ca + x once live
+const KAI = { ca: 'WkmJN7MRvXFe8rVoSkQoHKXwVwuNDxpuL7UqY1Qpump', x: 'https://x.com/KairosLayer1', gh: 'https://github.com/kairoschain/kairos', api: '', domain: 'kairoschain.org', fork: 'https://github.com/proof-native/parano1d' }; // set ca + x once live
 const MARK = '<svg viewBox="0 0 40 40" fill="none"><defs><linearGradient id="kg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe2a1"/><stop offset=".5" stop-color="#ffc35a"/><stop offset="1" stop-color="#ff8a3d"/></linearGradient></defs><circle cx="20" cy="20" r="17" stroke="#f4f1ea" stroke-opacity=".9" stroke-width="1.6"/><circle cx="20" cy="20" r="10.5" stroke="#f4f1ea" stroke-opacity=".35" stroke-width="1.2" stroke-dasharray="1.6 2.4"/><path d="M20 20 31 9" stroke="url(#kg)" stroke-width="2.4" stroke-linecap="round"/><circle cx="31" cy="9" r="3.4" fill="url(#kg)"/><circle cx="20" cy="20" r="2.6" fill="#f4f1ea"/></svg>';
 function chrome(active, opts = {}) {
   const b = document.createElement('header'); b.className = 'bar';

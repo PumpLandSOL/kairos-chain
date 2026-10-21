@@ -61,7 +61,7 @@ const CH = [
  { id: 'cover', k: 'Kairos Chain · $KAIROS', h: 'Kairos.<span class="tag">The proof‑native <span class="gt">Layer 1 blockchain.</span></span>', big: 1,
    p: 'On Kairos, <b>every block proves the entire chain is valid</b>. Anyone can verify all of it in about a second, with no signatures to steal and no trusted setup.',
    tri: [['O(1) sync', 'verify one proof, not all history'], ['Keyless', 'ownership proven, never signed'], ['Living state', 'storage follows live use']],
-   cta: [['Why it matters →', '#debt', 1], ['Whitepaper', '/whitepaper']],
+   cta: [['Why it matters →', '#debt', 1], ['Whitepaper', '/whitepaper']], ca: 1,
    s: () => { let o = ''; const ins = [[70, 150, G2], [56, 230, B], [70, 310, G], [56, 390, B], [70, 470, G2]];
      ins.forEach(([x, y, c], i) => { o += `<g class="ap" ${at(.1 * i)}>${Ci(x, y, 5, 'none', 0, c, 'pu')}${P(`M${x} ${y} C ${x + 90} ${y}, 150 300, 236 300`, c, 1, 'fl2', 'stroke-opacity=".6"')}</g>`; });
      o += `<g class="ap" ${at(.4)}>${Ci(270, 300, 62, G, .7, 'none', 'sp', 'stroke-dasharray="1 4"')}${Ci(270, 300, 46, G, 1.6, 'rgba(14,12,8,.92)', 'gl')}${Ci(270, 300, 30, G, .8, 'none', 'sp r', 'stroke-dasharray="20 8"')}<text x="270" y="309" fill="${G}" font-family="Instrument Serif" font-style="italic" font-size="30" text-anchor="middle">κ</text></g>`;
