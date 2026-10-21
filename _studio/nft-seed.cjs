@@ -1,0 +1,8 @@
+const K = require('../client/kairos-keys.js'), T = require('../client/tn-core.js'), B = 'http://localhost:8268';
+const j = async (p, b) => (await fetch(B + p, b ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) } : {})).json();
+async function mine(to) { const tp = await j('/api/tn/template?miner=' + to); const f = T.powFields(tp.header), tgt = T.I.fromHex(tp.header.target); for (let n = 0n; ; n++) { f[10] = T.u128(n); if (T.le256lt(T.powDigestFields(f), tgt)) return j('/api/tn/submit', { id: tp.id, nonce: n.toString(16) }); } }
+(async () => { const names = [['Orbit #1', 'Orbits'], ['Orbit #2', 'Orbits'], ['Orbit #3', 'Orbits'], ['Contour #7', 'Contours'], ['Halo #4', 'Halos'], ['Orbit #9', 'Orbits'], ['Contour #2', 'Contours'], ['Halo #1', 'Halos']];
+  const M = K.randomMaster(); let i = 0; await mine(K.address(M, 0)); await mine(K.address(M, 0));
+  for (const [k, [n, c]] of names.entries()) { const seed = require('crypto').randomBytes(8).toString('hex'); let r = await j('/api/tn/op', { secret: K.spendSecret(M, i), next: K.address(M, i + 1), op: { type: 'mintNft', name: n, collection: c, seed, palette: k % 8 } }); i++; await mine(K.address(K.randomMaster(), 0));
+    const tx = await j('/api/explorer/tx/' + r.txid); if (k < 6) { r = await j('/api/tn/op', { secret: K.spendSecret(M, i), next: K.address(M, i + 1), op: { type: 'listNft', nft: tx.result.asset, price: String((40 + k * 15) * 1e6) } }); i++; await mine(K.address(K.randomMaster(), 0)); } }
+  console.log('seeded', (await j('/api/tn/nfts')).nfts.length, 'listed', (await j('/api/tn/nfts?listed=1')).nfts.length); })();

@@ -6,7 +6,7 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': '
 const explorer = require('./explorer'), world = require('./world');
 const readBody = (req) => () => new Promise((ok, no) => { let d = ''; req.on('data', (c) => { d += c; if (d.length > 64000) { no(new Error('body too large')); req.destroy(); } }); req.on('end', () => { try { ok(JSON.parse(d || '{}')); } catch { no(new Error('bad json')); } }); });
 const send = (res) => (code, obj) => { res.writeHead(code, { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'cache-control': 'no-store' }); res.end(JSON.stringify(obj)); };
-const ROUTES = { '/': 'index.html', '/docs': 'docs.html', '/roadmap': 'roadmap.html', '/whitepaper': 'whitepaper.html', '/brand': 'brand.html', '/sync': 'sync.html', '/wallet': 'wallet.html', '/playground': 'playground.html', '/explorer': 'explorer.html', '/mine': 'mine.html', '/launchpad': 'launchpad.html', '/verify': 'verify.html', '/world': 'world.html' };
+const ROUTES = { '/': 'index.html', '/docs': 'docs.html', '/roadmap': 'roadmap.html', '/whitepaper': 'whitepaper.html', '/brand': 'brand.html', '/sync': 'sync.html', '/wallet': 'wallet.html', '/playground': 'playground.html', '/explorer': 'explorer.html', '/mine': 'mine.html', '/launchpad': 'launchpad.html', '/verify': 'verify.html', '/world': 'world.html', '/nft': 'nft.html' };
 http.createServer(async (req, res) => {
   const p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
   if (p === '/healthz') { res.writeHead(200); return res.end('ok'); }

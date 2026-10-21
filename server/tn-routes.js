@@ -18,6 +18,7 @@ async function testnetRoute(p, u, send, req, body) { const t = tn(), ip = String
     if (p === '/api/tn/fee') return send(200, { min: t.minFee(+u.searchParams.get('in') || 1, +u.searchParams.get('out') || 2) }), true;
     if ((m = p.match(/^\/api\/tn\/address\/(.+)$/)) && K1.test(m[1])) { const a = t.address(m[1]); return send(a ? 200 : 400, a || { error: 'bad address' }), true; }
     if (p === '/api/tn/headers') return send(200, t.headers(+u.searchParams.get('from') || 0, +u.searchParams.get('to') || 0)), true;
+    if (p === '/api/tn/nfts') return send(200, { nfts: t.nfts({ owner: u.searchParams.get('owner') || '', listed: u.searchParams.get('listed') === '1' }) }), true;
     if (p === '/api/tn/assets') return send(200, { assets: t.assets() }), true;
     if ((m = p.match(/^\/api\/tn\/asset\/([0-9a-zA-Z]{2,24})$/))) { const a = t.asset(m[1]); return send(a ? 200 : 404, a || { error: 'unknown asset' }), true; }
     if ((m = p.match(/^\/api\/tn\/holdings\/(.+)$/)) && K1.test(m[1])) return send(200, { holdings: t.holdings(m[1]) || [] }), true;

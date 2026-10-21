@@ -1,0 +1,65 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NFTs · Kairos</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/k.css"><link rel="stylesheet" href="/kairos.css">
+<meta name="description" content="Native NFTs on Kairos: one-of-one items with on-chain generative art, listed and sold atomically. No contracts, no EVM, no signatures. Live on the web testnet.">
+<meta property="og:title" content="Native NFTs on Kairos"><meta property="og:image" content="/og.png">
+<style>
+.hd{padding:44px 0 6px;display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap}.hd h1{font-weight:800;letter-spacing:-.055em;line-height:.92;font-size:clamp(44px,5.6vw,84px);margin-top:14px}.hd p{color:var(--ink2);max-width:640px;margin-top:12px;font-size:17px}
+.wb{display:flex;gap:10px;align-items:center;border:1px solid var(--rule2);border-radius:16px;background:var(--card);padding:10px 12px 10px 18px;font-family:'Geist Mono';font-size:13px}.wb b{color:var(--gold);font-weight:500}
+.tabs{display:flex;gap:8px;margin:22px 0 16px;flex-wrap:wrap}.tabs button{height:42px;padding:0 18px;border-radius:12px;border:1px solid var(--rule2);background:none;color:var(--ink2);font-family:'Geist Mono';font-size:12px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}.tabs button.on{border-color:var(--gold);color:var(--gold);background:rgba(255,195,90,.06)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:80px}.nc{border:1px solid var(--rule2);border-radius:18px;background:var(--card);padding:12px;transition:.15s}.nc:hover{border-color:var(--gold);transform:translateY(-2px)}
+.nc canvas{width:100%;aspect-ratio:1;border-radius:12px;background:#05070d;display:block}.nc b{display:block;font-size:17px;margin-top:10px}.nc .m{font-family:'Geist Mono';font-size:12px;color:var(--ink3)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px}.pr{font-family:'Geist Mono';font-size:14px;color:var(--gold)}
+.pan{border:1px solid var(--rule2);border-radius:18px;background:var(--card);padding:22px}.tl{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:80px}
+.in{width:100%;height:46px;border-radius:12px;border:1px solid var(--rule2);background:rgba(4,5,10,.6);color:var(--fg);font-family:'Geist Mono';font-size:14px;padding:0 14px;outline:none}.in:focus{border-color:var(--gold)}
+.lbl{font-family:'Geist Mono';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:14px 0 6px}
+.pal{display:flex;gap:8px;flex-wrap:wrap}.pal i{width:40px;height:40px;border-radius:10px;cursor:pointer;border:3px solid transparent}.pal i.on{border-color:#fff}
+.msg{margin-top:12px;font-size:13.5px;font-family:'Geist Mono'}.ok{color:#7dffb2}.no{color:#ff8b80}.empty{text-align:center;padding:50px 20px;color:var(--ink3);grid-column:1/-1}
+.sbtn{height:34px;padding:0 12px;font-size:11px}
+@media(max-width:1000px){.grid{grid-template-columns:1fr 1fr}.tl{grid-template-columns:1fr}}
+</style></head><body>
+<main class="wrap">
+<section class="hd"><div><div class="eyebrow"><b>●</b> Native NFTs · web testnet</div><h1>One of one. <span class="it red">Proof-native.</span></h1><p>Mint an NFT whose art is drawn from an on-chain seed. List it, and the buyer's payment and your ownership change hands atomically, in the same block. No contracts, no EVM, no signatures.</p></div><div class="wb" id="wb"></div></section>
+<div class="tabs" id="tabs"></div><div id="view"></div></main>
+<script src="/k.js"></script><script src="/kairos-keys.js"></script><script>chrome('/nft');
+const KK = window.KairosKeys, f6 = (u) => (Number(u) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 4 }), esc = (s) => String(s).replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+const api = async (p, b) => { const r = await fetch(p, b ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) } : {}); return r.json(); };
+const PALS = [['#7dffb2', '#3fd68b'], ['#79adff', '#c58bff'], ['#ffc35a', '#ff8a3d'], ['#ff5d4f', '#ffc35a'], ['#c58bff', '#ff5d4f'], ['#f4f1ea', '#79adff'], ['#7dffb2', '#79adff'], ['#ff8a3d', '#c58bff']];
+// generative orbit art from an on-chain seed (deterministic)
+function art(cv, seed, pal, t = 0) { const g = cv.getContext('2d'), S = cv.width; let h = parseInt(seed.slice(0, 8), 16) >>> 0; const rnd = () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) ^ Math.imul(h ^ (h >>> 13), 3266489909)) >>> 0) / 4294967296;
+  const [c1, c2] = PALS[pal % PALS.length], lobes = 2 + Math.floor(rnd() * 5), amp = .06 + rnd() * .12, rings = 16 + Math.floor(rnd() * 14), ph = rnd() * 6.28, r0 = .18 + rnd() * .1, hole = rnd() > .4;
+  g.fillStyle = '#05070d'; g.fillRect(0, 0, S, S);
+  for (let k = 0; k < rings; k++) { const f = k / rings, r = S * (r0 + f * .2), grd = g.createLinearGradient(0, 0, S, S); grd.addColorStop(0, c1); grd.addColorStop(1, c2); g.strokeStyle = grd; g.globalAlpha = .25 + .55 * (1 - Math.abs(f - .5) * 2); g.lineWidth = S / 300; g.beginPath();
+    for (let a = 0; a <= 120; a++) { const th = a / 120 * Math.PI * 2, rr = r * (1 + amp * Math.sin(th * lobes + ph + f * 1.4 + t) + amp * .4 * Math.cos(th * (lobes + 1) - ph)); const x = S / 2 + rr * Math.cos(th), y = S / 2 + rr * Math.sin(th); a ? g.lineTo(x, y) : g.moveTo(x, y); } g.closePath(); g.stroke(); }
+  g.globalAlpha = 1; if (hole) { g.fillStyle = '#05070d'; g.beginPath(); g.arc(S / 2, S / 2, S * r0 * .6, 0, 7); g.fill(); } }
+let M = null, ACC = [], TAB = 'market', NFTS = [], PAL = 2, SEED = rs();
+function rs() { return [...crypto.getRandomValues(new Uint8Array(8))].map((b) => b.toString(16).padStart(2, '0')).join(''); }
+try { M = localStorage.getItem('kai_master'); } catch {}
+async function scan() { if (!M) return; const out = []; let gap = 0; for (let i = 0; i < 80 && gap < 3; i++) { const a = KK.address(M, i), r = await api('/api/tn/address/' + a); const used = !!(r.retired || (r.history && r.history.length) || r.pending); out.push({ i, a, kai: BigInt(r.balance || 0), retired: r.retired, used, pending: r.pending }); gap = used ? 0 : gap + 1; } ACC = out; wallet(); }
+const fresh = () => KK.address(M, ACC.reduce((m, x) => (x.used ? x.i : m), -1) + 1);
+function wallet() { if (!M) { $('wb').innerHTML = '<span>No wallet on this device</span><a class="btn pri" href="/wallet">Open wallet</a>'; return; } $('wb').innerHTML = `<span>KAIROS</span><b>${f6(ACC.reduce((s, x) => s + x.kai, 0n))}</b><button class="btn" onclick="drip()">Faucet</button>`; }
+async function drip() { const r = await api('/api/tn/faucet', { to: fresh() }); toast(r.error || 'Faucet sent 25 test KAIROS'); setTimeout(scan, 3000); }
+async function send(op, ownerAddr, el) { if (!M) return toast('Open your wallet first'); const w = ownerAddr ? ACC.find((x) => x.a === ownerAddr && !x.retired) : ACC.filter((x) => !x.retired && x.kai > 0n).sort((a, b) => (b.kai > a.kai ? 1 : -1))[0];
+  const box = $(el); if (!w) { box.innerHTML = '<span class="no">No KAIROS on the right address yet. Use the faucet.</span>'; return; } if (w.pending) { box.innerHTML = '<span class="no">A transaction is already pending. Try again after the next block.</span>'; return; }
+  if (w.kai === 0n) { box.innerHTML = '<span class="no">This address needs a little KAIROS for the network fee. Use the faucet.</span>'; return; }
+  const r = await api('/api/tn/op', { secret: KK.spendSecret(M, w.i), next: fresh(), op }); if (r.error) { box.innerHTML = '<span class="no">' + esc(r.error) + '</span>'; return; }
+  box.innerHTML = '<span class="ok">Sent. Settles in the next block…</span>'; w.pending = 1;
+  for (let k = 0; k < 60; k++) { await new Promise((s) => setTimeout(s, 3000)); const t = await api('/api/explorer/tx/' + r.txid); if (t && t.result) { box.innerHTML = t.result.ok ? '<span class="ok">✓ ' + esc(t.result.note) + ' · block ' + t.height + '</span>' : '<span class="no">✗ ' + esc(t.result.error) + '</span>'; break; } }
+  await scan(); await load(); }
+async function load() { NFTS = (await api('/api/tn/nfts')).nfts || []; render(); }
+const TABS = [['market', 'Marketplace'], ['all', 'Explore'], ['mine', 'My collection'], ['create', 'Create']];
+function setTab(t) { TAB = t; render(); }
+function card(n, actions) { return `<div class="nc"><canvas width="360" height="360" data-seed="${n.seed}" data-pal="${n.palette}"></canvas><b>${esc(n.name)}</b><div class="m">${esc(n.collection)} · by ${n.creator.slice(0, 10)}…</div><div class="row"><span class="pr">${n.price ? f6(n.price) + ' KAIROS' : n.sales.length ? 'last ' + f6(n.sales[n.sales.length - 1].price) : 'not listed'}</span>${actions || ''}</div><div class="msg" id="m_${n.id}"></div></div>`; }
+function paint() { document.querySelectorAll('canvas[data-seed]').forEach((c) => art(c, c.dataset.seed, +c.dataset.pal)); }
+function render() { $('tabs').innerHTML = TABS.map(([k, l]) => `<button class="${TAB === k ? 'on' : ''}" onclick="setTab('${k}')">${l}</button>`).join(''); const mine = new Set(ACC.map((x) => x.a));
+  if (TAB === 'create') return vCreate();
+  let list = TAB === 'market' ? NFTS.filter((n) => n.price) : TAB === 'mine' ? NFTS.filter((n) => mine.has(n.owner)) : NFTS;
+  $('view').innerHTML = `<div class="grid">${list.map((n) => card(n, mine.has(n.owner) ? (n.price ? `<button class="btn sbtn" onclick="send({type:'unlistNft',nft:'${n.id}'},'${n.owner}','m_${n.id}')">Unlist</button>` : `<button class="btn sbtn" onclick="listIt('${n.id}','${n.owner}')">List</button>`) : n.price ? `<button class="btn pri sbtn" onclick="send({type:'buyNft',nft:'${n.id}',max:'${n.price}'},null,'m_${n.id}')">Buy</button>` : '')).join('') || `<div class="empty">${TAB === 'market' ? 'Nothing listed yet.' : TAB === 'mine' ? 'You have no NFTs yet.' : 'No NFTs minted yet.'} <button class="btn pri" style="margin-left:10px" onclick="setTab('create')">Mint one</button></div>`}</div>`; paint(); }
+function listIt(id, owner) { const v = prompt('List for how many KAIROS?', '5'); const p = Math.round(parseFloat(v) * 1e6); if (p > 0) send({ type: 'listNft', nft: id, price: String(p) }, owner, 'm_' + id); }
+function vCreate() { $('view').innerHTML = `<div class="tl"><div class="pan"><canvas id="pv" width="720" height="720" style="width:100%;border-radius:14px;background:#05070d"></canvas><div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="SEED=rs();draw()">New art</button><span class="mono dim" style="align-self:center;font-size:12px">seed <span id="sd"></span></span></div></div>
+  <div class="pan"><div class="lbl" style="margin-top:0">Name</div><input class="in" id="nn" maxlength="32" placeholder="Orbit #1"><div class="lbl">Collection</div><input class="in" id="nc" maxlength="32" value="Orbits"><div class="lbl">Palette</div><div class="pal" id="pal"></div>
+   <div class="lbl">On chain</div><div class="dim" style="font-size:14px;line-height:1.6">The art is fully determined by the seed and palette stored with the NFT, so anyone can redraw it from chain data. Minting costs 0.5 KAIROS, burned.</div>
+   <button class="btn pri" style="width:100%;justify-content:center;margin-top:16px;height:50px" onclick="send({type:'mintNft',name:$('nn').value,collection:$('nc').value,seed:SEED,palette:PAL},null,'cm')">Mint NFT</button><div class="msg" id="cm"></div></div></div>`;
+  $('pal').innerHTML = PALS.map((p, i) => `<i style="background:linear-gradient(135deg,${p[0]},${p[1]})" class="${i === PAL ? 'on' : ''}" onclick="PAL=${i};vCreate()"></i>`).join(''); draw(); }
+function draw() { art($('pv'), SEED, PAL); $('sd').textContent = SEED; }
+(async () => { wallet(); await scan(); await load(); setInterval(() => { if (TAB !== 'create') load(); }, 15000); })();
+</script></body></html>

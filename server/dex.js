@@ -3,7 +3,7 @@
 // Pure state transitions over D (asset state) given the KAIROS an op brings in; the caller settles the KAIROS side.
 // All amounts are BigInt base units: 1 KAIROS = 1e6 μKAIROS, 1 whole token = 1e6 base units.
 'use strict';
-const ONE = 1_000_000n, RAISE = BigInt(process.env.LAUNCH_RAISE_KAIROS || 200) * ONE, VB = RAISE / 4n, CREATE_FEE = 1n * ONE, MIN_BACKING = 10n, POOL_FEE_BPS = 30n;
+const NFT_FEE = 500_000n, ONE = 1_000_000n, RAISE = BigInt(process.env.LAUNCH_RAISE_KAIROS || 200) * ONE, VB = RAISE / 4n, CREATE_FEE = 1n * ONE, MIN_BACKING = 10n, POOL_FEE_BPS = 30n;
 const fresh = () => ({ assets: {}, bal: {}, trades: {} });
 const big = (v) => { const b = BigInt(v); if (b < 0n) throw new Error('negative amount'); return b; };
 const get = (D, id, o) => BigInt((D.bal[id] || {})[o] || '0');
@@ -30,6 +30,19 @@ function apply(D, op, ctx) {
     if (mode === 'launch') { a.curveTokens = (S * 4n / 5n).toString(); a.poolTokens = (S - S * 4n / 5n).toString(); } else add(D, id, o, S);
     D.assets[id] = a; return { spent: cost, received: 0n, burned: CREATE_FEE, note: `created ${ticker} (${mode})`, asset: id };
   }
+  // ---- native NFTs: one-of-one items with on-chain generative art seeds, atomic listing and purchase ----
+  if (op.type === 'mintNft') { D.nfts = D.nfts || {}; const name = String(op.name || '').trim().slice(0, 32), col = String(op.collection || '').trim().slice(0, 32) || 'Orbits';
+    if (name.length < 2) throw new Error('name needs at least 2 characters'); const seed = String(op.seed || '').toLowerCase(); if (!/^[0-9a-f]{8,32}$/.test(seed)) throw new Error('bad art seed');
+    const palette = Math.max(0, Math.min(7, op.palette | 0)), cost = NFT_FEE; if (ctx.kaiIn < cost) throw new Error('minting costs 0.5 KAIROS');
+    const id = ctx.idFor('NFT:' + col + ':' + name + ':' + seed); if (D.nfts[id]) throw new Error('an identical NFT already exists');
+    D.nfts[id] = { id, name, collection: col, seed, palette, creator: o, owner: o, h: ctx.h, ts: ctx.ts, price: null, sales: [] };
+    return { spent: cost, received: 0n, burned: cost, note: 'minted ' + name, asset: id }; }
+  if (op.type === 'listNft' || op.type === 'unlistNft' || op.type === 'buyNft') { const n = (D.nfts || {})[op.nft]; if (!n) throw new Error('unknown NFT');
+    if (op.type === 'listNft') { if (n.owner !== o) throw new Error('you do not own this NFT'); const price = big(op.price); if (price < 10_000n) throw new Error('price must be at least 0.01 KAIROS'); n.price = price.toString(); return { spent: 0n, received: 0n, burned: 0n, note: 'listed ' + n.name + ' for ' + Number(price) / 1e6 + ' KAIROS' }; }
+    if (op.type === 'unlistNft') { if (n.owner !== o) throw new Error('you do not own this NFT'); n.price = null; return { spent: 0n, received: 0n, burned: 0n, note: 'unlisted ' + n.name }; }
+    if (!n.price) throw new Error('this NFT is not for sale'); if (n.owner === o) throw new Error('you already own it'); const price = BigInt(n.price); if (op.max && price > big(op.max)) throw new Error('price changed'); if (ctx.kaiIn < price) throw new Error('not enough KAIROS');
+    const seller = n.owner; n.sales.push({ h: ctx.h, ts: ctx.ts, price: n.price, from: seller, to: o }); n.owner = o; n.price = null;
+    return { spent: price, received: 0n, burned: 0n, note: 'bought ' + n.name + ' for ' + Number(price) / 1e6 + ' KAIROS', pay: [{ owner: seller, amount: price }] }; }
   const a = D.assets[op.asset]; if (!a) throw new Error('unknown asset'); a.lastH = ctx.h;
   if (op.type === 'buy') {
     let kai = big(op.kai); if (kai <= 0n) throw new Error('amount must be positive'); if (kai > ctx.kaiIn) throw new Error('not enough KAIROS'); const min = big(op.min || 0);
@@ -75,7 +88,7 @@ function apply(D, op, ctx) {
   throw new Error('unknown operation');
 }
 // move every token balance and LP share from one owner to another (the web-testnet one-time-address model)
-function migrate(D, from, to) { for (const id of Object.keys(D.bal)) { const v = get(D, id, from); if (v) { put(D, id, from, 0n); add(D, id, to, v); } }
+function migrate(D, from, to) { for (const n of Object.values(D.nfts || {})) if (n.owner === from) n.owner = to; for (const id of Object.keys(D.bal)) { const v = get(D, id, from); if (v) { put(D, id, from, 0n); add(D, id, to, v); } }
   for (const a of Object.values(D.assets)) if (a.pool && a.pool.lps[from]) { a.pool.lps[to] = (BigInt(a.pool.lps[to] || '0') + BigInt(a.pool.lps[from])).toString(); delete a.pool.lps[from]; } }
 function view(D, a) { const p = priceOf(a), raised = BigInt(a.raised || '0');
   return { id: a.id, name: a.name, ticker: a.ticker, desc: a.desc, color: a.color, mode: a.mode, created: a.created, ts: a.ts, supply: a.supply, backing: a.backing, reserve: a.reserve, burned: a.burned, graduated: a.graduated, raised: a.raised, raiseTarget: RAISE.toString(),
