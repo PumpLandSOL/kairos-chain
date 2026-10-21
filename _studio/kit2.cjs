@@ -61,6 +61,18 @@ const K2 = {
     const steps = [['$KAIROS on pump.fun', 'now'], ['Web testnet', 'live'], ['Node testnet', 'next'], ['Snapshot + migration', 'then'], ['Mainnet genesis', 'the moment']];
     return it.map(([n, a, b, c], i) => card(130 + (i % 2) * 1090, 400 + Math.floor(i / 2) * 285, 1050, 255, '<div style="display:flex;gap:26px"><div class="m" style="font-size:34px;color:' + c + ';flex:none;margin-top:6px">' + n + '</div><div>' + big(a, 40) + par(b, 25) + '</div></div>')).join('') +
       '<div style="position:absolute;left:130px;right:130px;top:1010px;display:grid;grid-template-columns:repeat(5,1fr);gap:14px">' + steps.map(([a, b], i) => '<div style="border-top:4px solid ' + (i < 2 ? OK : i === 4 ? G : LINE) + ';padding-top:16px"><div class="m" style="font-size:16px;color:' + (i < 2 ? OK : DIM) + ';letter-spacing:.16em;text-transform:uppercase">' + b + '</div><div style="font-size:27px;font-weight:700;margin-top:6px">' + a + '</div></div>').join('') + '</div>'; })()),
+  'kairos-g12-launchpad-vs': frame('the kairos launchpad', 'Not another <span class="r">token contract.</span>', (() => {
+    const cols = ['', 'pump.fun · Solana', 'EVM launchpads', 'Kairos'], rows = [
+      ['What a token is', 'SPL token + launch program', 'a smart contract per token', 'a native asset in chain state'],
+      ['Holder backing', 'none', 'none', 'reserved, redeem anytime'],
+      ['Can more be minted?', 'authority revoked', 'depends on the code', 'never, by protocol'],
+      ['Graduation', 'moves to a separate DEX', 'manual LP via a router', 'same asset id, native pool'],
+      ['Authorizing a trade', 'Ed25519 signature', 'ECDSA signature', 'zero-knowledge proof'],
+      ['Who checks it', 'validators re-execute', 'nodes re-execute', 'proved into the state'],
+      ['Your price limit', 'slippage, bots in between', 'mempool front-running', 'binding, refund on miss'],
+      ['Quantum-safe', '✗', '✗', '✓ hash-based']];
+    return '<div style="position:absolute;left:130px;right:130px;top:370px">' + [cols, ...rows].map((r, i) => '<div style="display:grid;grid-template-columns:430px repeat(3,1fr);align-items:center;' + (i ? 'border-bottom:2px solid ' + LINE + ';min-height:74px' : 'border-bottom:3px solid ' + G + ';padding-bottom:16px') + '">' + r.map((c, j) => '<div style="text-align:' + (j ? 'center' : 'left') + ';font-size:' + (i ? 26 : 30) + 'px;padding:0 10px;' + (!i ? 'font-weight:800;letter-spacing:-.02em;' : '') + (j === 3 ? 'background:rgba(255,195,90,' + (i ? .08 : .14) + ');padding:' + (i ? 22 : 14) + 'px 10px;color:' + (i ? '#f4f1ea' : G) + ';' + (i ? 'font-weight:600' : 'border-radius:16px 16px 0 0') : 'color:' + (i && j ? MU : '#f4f1ea')) + '">' + c + '</div>').join('') + '</div>').join('') +
+      '<div class="m" style="font-size:16px;color:' + DIM + ';margin-top:18px">Live on the Kairos web testnet with test KAIROS. Proof-native settlement arrives with the node testnet and mainnet.</div></div>'; })()),
 };
 (async () => { const want = process.argv.slice(2); let port = 9960;
   for (const [n, body] of Object.entries(K2)) { if (want.length && !want.includes(n)) continue; const f = path.join(SRC, n + '.html'); fs.writeFileSync(f, '<!doctype html><meta charset="utf-8">' + BASE + body);
