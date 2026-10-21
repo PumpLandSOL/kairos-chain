@@ -1,0 +1,50 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verify the chain · Kairos</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/k.css"><link rel="stylesheet" href="/kairos.css">
+<meta name="description" content="Re-check every Kairos testnet block in your own browser: proof of work, block ids, chain links and difficulty, with the same Poseidon2b code the node runs.">
+<meta property="og:title" content="Don't trust the explorer. Verify the chain in your browser."><meta property="og:image" content="/og.png">
+<style>
+.hd{padding:44px 0 6px}.hd h1{font-weight:800;letter-spacing:-.055em;line-height:.92;font-size:clamp(44px,5.8vw,90px);margin-top:14px}.hd p{color:var(--ink2);max-width:700px;margin-top:14px;font-size:17.5px}
+.lay{display:grid;grid-template-columns:1fr 1.1fr;gap:16px;margin:24px 0 80px;align-items:start}.pan{border:1px solid var(--rule2);border-radius:20px;background:var(--card);padding:22px}
+#ring{width:100%;max-width:440px;display:block;margin:0 auto}.big{font-size:44px;font-weight:800;letter-spacing:-.04em;text-align:center}.sub{text-align:center;color:var(--ink2);font-family:'Geist Mono';font-size:13px;margin-top:6px}
+.ck{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--rule)}.ck i{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-style:normal;font-weight:800;background:rgba(244,241,234,.06);color:var(--ink3)}.ck.ok i{background:rgba(125,255,178,.14);color:#7dffb2}.ck.no i{background:rgba(255,93,79,.14);color:#ff8b80}
+.ck b{font-size:16px}.ck span{font-family:'Geist Mono';font-size:13px;color:var(--ink2)}.ck p{font-size:13px;color:var(--ink3);margin-top:2px}
+.log{font-family:'Geist Mono';font-size:12px;color:var(--ink3);max-height:200px;overflow:auto;margin-top:14px}.log div{padding:4px 0;border-bottom:1px solid var(--rule)}
+.res{margin-top:16px;border-radius:14px;padding:16px;border:1px solid var(--rule2);font-size:15px}.res.ok{border-color:rgba(125,255,178,.5);background:rgba(125,255,178,.06)}.res.no{border-color:rgba(255,93,79,.5);background:rgba(255,93,79,.06)}
+@media(max-width:1000px){.lay{grid-template-columns:1fr}}
+</style></head><body>
+<main class="wrap">
+<section class="hd"><div class="eyebrow"><b>●</b> Verify · web testnet</div><h1>Don't trust the explorer.<br><span class="it red">Verify the chain yourself.</span></h1><p>Your browser downloads every block header and re-checks all of it locally, with the same Poseidon2b code the miners run: every proof of work, every block id, every link back to genesis, and every difficulty target.</p></section>
+<div class="lay">
+ <div class="pan"><canvas id="ring" width="880" height="880"></canvas><div class="big" id="cnt">0</div><div class="sub" id="cs">blocks verified in your browser</div>
+  <button class="btn pri" id="go" style="width:100%;justify-content:center;height:52px;margin-top:18px">Verify the whole chain</button><div id="res"></div></div>
+ <div class="pan"><h3 style="font-family:'Geist Mono';font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">What your browser checks</h3>
+  <div class="ck" id="c1"><i>·</i><div><b>Proof of work</b><p>Poseidon2b digest of each header is below its target</p></div><span>0</span></div>
+  <div class="ck" id="c2"><i>·</i><div><b>Block ids</b><p>each header hashes to the id the chain claims</p></div><span>0</span></div>
+  <div class="ck" id="c3"><i>·</i><div><b>Chain links</b><p>every block points at the one before it, back to genesis</p></div><span>0</span></div>
+  <div class="ck" id="c4"><i>·</i><div><b>Difficulty</b><p>each target recomputed with ASERT, integer for integer</p></div><span>0</span></div>
+  <div class="ck" id="c5"><i>·</i><div><b>Tip matches</b><p>your result equals the explorer's latest block</p></div><span>—</span></div>
+  <div class="log" id="log"></div>
+  <p style="color:var(--ink3);font-size:13px;margin-top:14px;line-height:1.55">On the node testnet and mainnet this becomes one step: check a single recursive proof that covers every block. The web testnet re-checks headers one by one so you can watch it happen.</p></div>
+</div></main>
+<script src="/k.js"></script><script>chrome('/verify');
+const api = async (p) => (await fetch(p)).json(); let N = 0, BAD = 0, TOTAL = 1, running = false, flash = 0; const cnt = { pow: 0, id: 0, link: 0, diff: 0 };
+const log = (h) => $('log').insertAdjacentHTML('afterbegin', '<div>' + h + '</div>');
+function setCk(id, ok, n) { const e = $(id); e.className = 'ck ' + (ok === null ? '' : ok ? 'ok' : 'no'); e.querySelector('i').textContent = ok === null ? '·' : ok ? '✓' : '✗'; e.querySelector('span').textContent = n; }
+$('go').onclick = async () => { if (running) return; running = true; $('go').textContent = 'Verifying…'; N = BAD = 0; Object.keys(cnt).forEach((k) => (cnt[k] = 0)); $('res').innerHTML = ''; $('log').innerHTML = '';
+  const t0 = performance.now(), first = await api('/api/tn/headers?from=0&to=0'); TOTAL = first.tip + 1; const W = new Worker('/tn-verify.js'); let prev = null, gen = null;
+  for (let from = 0; from <= first.tip; from += 200) { const b = await api('/api/tn/headers?from=' + from + '&to=' + (from + 199));
+    const r = await new Promise((ok) => { W.onmessage = (e) => ok(e.data); W.postMessage({ headers: b.headers, genTarget: b.genTarget, prev, gen }); }); prev = r.last; gen = r.gen;
+    for (const x of r.out) { N++; if (x.ok) { cnt.pow++; cnt.id++; cnt.link++; cnt.diff++; } else { BAD++; log('<span style="color:#ff8b80">block #' + x.height + ': ' + x.errs.join(', ') + '</span>'); } }
+    $('cnt').textContent = N.toLocaleString(); setCk('c1', BAD ? false : true, cnt.pow); setCk('c2', BAD ? false : true, cnt.id); setCk('c3', BAD ? false : true, cnt.link); setCk('c4', BAD ? false : true, cnt.diff); flash = 1;
+    log('blocks ' + from + '–' + Math.min(first.tip, from + 199) + ' ✓'); }
+  W.terminate(); const s = await api('/api/explorer/summary'), tipOk = prev && s.bestHash === prev.hash || s.height > N - 1; setCk('c5', tipOk, tipOk ? 'block ' + (N - 1) : 'mismatch');
+  const secs = ((performance.now() - t0) / 1000).toFixed(1);
+  $('res').innerHTML = `<div class="res ${BAD ? 'no' : 'ok'}">${BAD ? `✗ ${BAD} blocks failed verification` : `✓ All ${N.toLocaleString()} blocks verified locally in ${secs} s. Your browser checked the chain itself, no trust in this website required.`}</div>`;
+  $('cs').textContent = 'blocks verified in ' + secs + ' s'; $('go').textContent = 'Verify again'; running = false; };
+(() => { const g = $('ring').getContext('2d'), C = 440; function f(t) { g.clearRect(0, 0, 880, 880); flash *= .95; const p = Math.min(1, N / TOTAL);
+  for (let k = 0; k < 5; k++) { g.strokeStyle = 'rgba(244,241,234,' + (.06 + k * .02) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(C, C, 200 + k * 40, 0, 7); g.stroke(); }
+  g.strokeStyle = BAD ? '#ff5d4f' : '#ffc35a'; g.lineWidth = 14; g.lineCap = 'round'; g.beginPath(); g.arc(C, C, 360, -Math.PI / 2, -Math.PI / 2 + p * Math.PI * 2); g.stroke();
+  const a = -Math.PI / 2 + t / 600; g.strokeStyle = 'rgba(255,195,90,.6)'; g.lineWidth = 3; g.beginPath(); g.moveTo(C, C); g.lineTo(C + 330 * Math.cos(a), C + 330 * Math.sin(a)); g.stroke();
+  g.fillStyle = 'rgba(255,195,90,' + (.1 + flash * .4) + ')'; g.beginPath(); g.arc(C, C, 150, 0, 7); g.fill(); g.fillStyle = '#f4f1ea'; g.font = '800 64px Geist'; g.textAlign = 'center'; g.fillText(Math.round(p * 100) + '%', C, C + 22);
+  requestAnimationFrame(f); } requestAnimationFrame(f); })();
+</script></body></html>
