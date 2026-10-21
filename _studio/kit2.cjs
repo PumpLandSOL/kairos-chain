@@ -108,6 +108,19 @@ const K2 = {
     return card(130, 380, 1050, 600, '<div class="m" style="font-size:20px;color:' + R + '">THE COMPLAINT · NOID MINERS</div><div style="font-size:46px;font-weight:800;letter-spacing:-.03em;margin-top:16px;line-height:1.15">"3 entities take over 80% of the supply daily."</div><div style="font-size:26px;color:' + MU + ';margin-top:20px;line-height:1.5">When 100% of a coin is created by mining, whoever runs the biggest proving farm ends up owning most of it. Better hardware will always win more blocks. The fix is making sure blocks are not where the supply comes from.</div>', 'rgba(255,93,79,.45)') +
       '<div style="position:absolute;left:1220px;right:130px;top:380px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-bottom:14px;border-bottom:3px solid ' + G + '"><div class="m" style="font-size:20px;color:' + MU + '">NOID</div><div class="m" style="font-size:20px;color:' + G + '">KAIROS</div></div>' +
       L.map(([k, a, b]) => '<div style="padding:16px 0;border-bottom:2px solid ' + LINE + '"><div class="m" style="font-size:17px;color:' + DIM + '">' + k.toUpperCase() + '</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;font-size:25px;line-height:1.3"><div style="color:' + MU + '">' + a + '</div><div style="font-weight:700">' + b + '</div></div></div>').join('') + '</div>'; })()),
+  'kairos-g18-vs-caps': frame('market cap vs technology', 'Priced like a startup. <span class="r">Built like the endgame.</span>', (() => {
+    const PV = '<span style="color:' + G + ';font-weight:700">preview</span>', RM = '<span style="color:' + G + ';font-weight:700">roadmap</span>';
+    const cols = [['Bitcoin', '$1.66T'], ['Ethereum', '$298B'], ['Zcash', '$21.4B'], ['NOID', '$6.1M'], ['Kairos', '$22K']], rows = [
+      ['One proof verifies the whole chain', no, RM, RM, yes, yes],
+      ['No signatures, no public keys on chain', no, no, no, yes, yes],
+      ['Hash-based, post-quantum by design', no, no, no, yes, yes],
+      ['No trusted setup', yes, mid, yes, yes, yes],
+      ['Native tokens + launchpad live', no, no, no, PV, yes],
+      ['Mine and verify from a browser', no, no, no, no, yes],
+      ['0% developer cut of block rewards', yes, yes, no, no, yes]];
+    return '<div style="position:absolute;left:130px;right:130px;top:370px"><div style="display:grid;grid-template-columns:640px repeat(5,1fr);align-items:end;border-bottom:3px solid ' + G + ';padding-bottom:14px"><div></div>' + cols.map(([n, c], j) => '<div style="text-align:center;' + (j === 4 ? 'background:rgba(255,195,90,.14);border-radius:16px 16px 0 0;padding:14px 0 6px;' : '') + '"><div style="font-size:31px;font-weight:800;letter-spacing:-.02em;color:' + (j === 4 ? G : '#f4f1ea') + '">' + n + '</div><div class="m" style="font-size:22px;color:' + (j === 4 ? G : MU) + ';margin-top:6px">' + c + '</div></div>').join('') + '</div>' +
+      rows.map((r) => '<div style="display:grid;grid-template-columns:640px repeat(5,1fr);align-items:center;border-bottom:2px solid ' + LINE + ';min-height:76px">' + r.map((c, j) => '<div style="text-align:' + (j ? 'center' : 'left') + ';font-size:' + (j ? 32 : 27) + 'px;' + (j === 5 ? 'background:rgba(255,195,90,.08);padding:20px 0;' : '') + '">' + c + '</div>').join('') + '</div>').join('') +
+      '<div class="m" style="font-size:15px;color:' + DIM + ';margin-top:16px;text-transform:none;letter-spacing:.06em">Market caps Oct 21 2026: CoinGecko (BTC, ETH, ZEC), LiveCoinWatch (NOID, price × total supply), DexScreener ($KAIROS). Roadmap = proposed or in research. Preview = announced, not shipped.</div></div>'; })()),
 };
 (async () => { const want = process.argv.slice(2); let port = 9960;
   for (const [n, body] of Object.entries(K2)) { if (want.length && !want.includes(n)) continue; const f = path.join(SRC, n + '.html'); fs.writeFileSync(f, '<!doctype html><meta charset="utf-8">' + BASE + body);
