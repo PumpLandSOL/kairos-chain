@@ -71,7 +71,7 @@ $KAIROS
 ```
 $KAIROS comes first. The chain comes next.
 
-At Kairos mainnet, every $KAIROS holder migrates 1:1 into native KAIROS, written into genesis.
+At Kairos mainnet, $KAIROS holders migrate into native KAIROS, written into genesis.
 
 After that, every new KAIROS is mined. 0% dev allocation. 100% to miners.
 
