@@ -12,7 +12,7 @@ One proof for the whole chain. No public keys. No trusted setup. Post-quantum by
 
 Live today: kairoschain.org
 
-$KAI
+$KAIROS
 ```
 
 ## 2. kairos-v2-explainer-40s.mp4
@@ -26,29 +26,29 @@ iv. Every node checks one proof
 
 kairoschain.org
 
-$KAI
+$KAIROS
 ```
 
 ## 3. kairos-v3-demo-wallet-29s.mp4
 ```
 Turn a photo into a Kairos wallet.
 
-Drop a PNG, get a k1 address. Pixels are read in your browser and never uploaded. Then grab test KAI from the faucet and send it.
+Drop a PNG, get a k1 address. Pixels are read in your browser and never uploaded. Then grab test KAIROS from the faucet and send it.
 
 kairoschain.org/wallet
 
-$KAI
+$KAIROS
 ```
 
 ## 4. kairos-v4-demo-mining-29s.mp4
 ```
 Mine a Kairos block from a browser tab.
 
-Paste your address, hit start. Your browser runs the real Kairos proof of work, and every block you find pays 16 test KAI.
+Paste your address, hit start. Your browser runs the real Kairos proof of work, and every block you find pays 16 test KAIROS.
 
 kairoschain.org/mine
 
-$KAI
+$KAIROS
 ```
 
 ## 5. kairos-v5-verify-race-22s.mp4
@@ -64,7 +64,7 @@ One ≈1 MB proof covers every block.
 
 kairoschain.org/sync
 
-$KAI
+$KAIROS
 ```
 
 ## 6. kairos-g01-proofstack.png
@@ -75,7 +75,7 @@ Addresses, spends, state, recursive history and proof of work all run on one bin
 
 No trusted setup anywhere.
 
-$KAI
+$KAIROS
 ```
 
 ## 7. kairos-g02-keyless.png
@@ -86,7 +86,7 @@ On Kairos there is no public key. You prove you know a secret with a zero-knowle
 
 No keys to steal. Nothing to sign.
 
-$KAI
+$KAIROS
 ```
 
 ## 8. kairos-g03-photokey.png
@@ -97,7 +97,7 @@ Exact pixels → BLAKE3 → a 256-bit secret → your k1 address. Change one pix
 
 Try it: kairoschain.org/wallet
 
-$KAI
+$KAIROS
 ```
 
 ## 9. kairos-g04-livestate.png
@@ -106,7 +106,7 @@ Most chains keep every transaction ever made, forever.
 
 Kairos keeps only what's alive. Spent outputs free their slot, so a chain that's 10 years old asks no more of a new node than one that's 10 days old.
 
-$KAI
+$KAIROS
 ```
 
 ## 10. kairos-g05-vs-l1s.png
@@ -119,7 +119,7 @@ How Kairos stacks up against Bitcoin, Ethereum, Solana and Mina:
 ✓ no trusted setup
 ✓ proof of work
 
-$KAI
+$KAIROS
 ```
 
 ## 11. kairos-g06-roadmap.png
@@ -132,18 +132,18 @@ Then: the road to genesis.
 
 kairoschain.org/roadmap
 
-$KAI
+$KAIROS
 ```
 
 ## 12. kairos-g07-emissions.png
 ```
 Kairos emissions:
 
-16 KAI per block, stepping down every year to a permanent 1 KAI tail.
+16 KAIROS per block, stepping down every year to a permanent 1 KAIROS tail.
 
 0% to developers. 100% of every block reward to the miner who proves it. State-growth fees are burned.
 
-$KAI
+$KAIROS
 ```
 
 ## 13. kairos-g08-quantum.png
@@ -154,7 +154,7 @@ No elliptic curves. No pairings. No trusted setup. No public keys.
 
 Every Kairos proof is hash-based, assessed at NIST post-quantum Category 1 (conditional).
 
-$KAI
+$KAIROS
 ```
 
 ## 14. kairos-g09-contracts.png
@@ -165,7 +165,7 @@ Vaults, allowances, budgets, recurring payments, refunds and vesting, all proved
 
 Break them yourself: kairoschain.org/playground
 
-$KAI
+$KAIROS
 ```
 
 ## 15. kairos-g10-live-today.png
@@ -182,5 +182,5 @@ Not a promise. Live today:
 
 kairoschain.org
 
-$KAI
+$KAIROS
 ```

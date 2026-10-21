@@ -1,6 +1,6 @@
 // Kairos web testnet. A single-producer-of-record chain that anyone can mine from a browser.
 // Real: k1 addresses (Poseidon2b), PoW digest + block id + ASERT (bit-exact ports), 30 s target, live-state slots
-// with reuse, Tx8x2 shape (≤8 in / ≤2 out), Kairos fee schedule with the burned state-growth fee, 16 KAI reward.
+// with reuse, Tx8x2 shape (≤8 in / ≤2 out), Kairos fee schedule with the burned state-growth fee, 16 KAIROS reward.
 // Not here (node testnet): recursive HistoryStep proofs and ZK spend capsules. Web-testnet spends authorize by
 // revealing the spend secret of a one-time address; the address is retired after its first spend.
 'use strict';
@@ -45,7 +45,7 @@ function checkTx(tx) {
     if (!/^[0-9a-f]{64}$/.test(x.secret || '')) return 'each input needs its 32-byte spend secret';
     if (toHex(I.deriveAddress(fromHex(x.secret))) !== s.owner) return `secret does not own slot ${x.slot}`; x.owner = s.owner; sumIn += BigInt(s.amount); }
   for (const o of tx.outputs) { try { o.owner = addrHex(o.to); } catch { return 'bad recipient address'; } if (C.revealed[o.owner]) return 'that address was already spent from and is retired; send to a fresh one'; const a = BigInt(o.amount); if (a <= 0n) return 'outputs must be positive'; o.amount = a.toString(); sumOut += a; }
-  const fee = BigInt(tx.fee || 0), need = minFee(tx.inputs.length, tx.outputs.length); if (fee < need.min) return `fee too low: needs at least ${need.min} μKAI`;
+  const fee = BigInt(tx.fee || 0), need = minFee(tx.inputs.length, tx.outputs.length); if (fee < need.min) return `fee too low: needs at least ${need.min} μKAIROS`;
   if (sumIn !== sumOut + fee) return `inputs (${sumIn}) must equal outputs (${sumOut}) + fee (${fee})`;
   tx.fee = fee.toString(); tx.burn = need.burn.toString(); tx.nonce = Date.now(); return null; }
 function submitTx(raw) { const tx = { inputs: (raw.inputs || []).map((x) => ({ slot: +x.slot, secret: String(x.secret || '').toLowerCase() })), outputs: (raw.outputs || []).map((o) => ({ to: String(o.to || '').trim(), amount: String(o.amount) })), fee: String(raw.fee || 0) };

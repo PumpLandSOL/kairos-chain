@@ -2,9 +2,9 @@
 
 site: https://kairoschain.org
 
-## Bio (147 chars)
+## Bio (150 chars)
 ```
-Kairos Chain. A proof-native Layer 1: every block carries one recursive proof of the entire chain. No replay. No signatures. No trusted setup. $KAI
+Kairos Chain. A proof-native Layer 1: every block carries one recursive proof of the entire chain. No replay. No signatures. No trusted setup. $KAIROS
 ```
 
 Profile picture: brand/kairos-pfp.png · Header: brand/kairos-banner.png
@@ -19,7 +19,7 @@ No replay. No signatures. No trusted setup.
 
 kairoschain.org
 
-$KAI
+$KAIROS
 ```
 
 ## 2. kairos-vs.png
@@ -30,7 +30,7 @@ To verify Solana, you trust a snapshot from a peer.
 
 To verify Kairos, you check one proof. About a second on a laptop, at any chain height.
 
-$KAI
+$KAIROS
 ```
 
 ## 3. kairos-howitworks.png
@@ -53,7 +53,7 @@ Your address is a hash of a 256-bit secret. To spend, your wallet proves it know
 
 Nothing on the wire to attack as a key. Nothing to sign.
 
-$KAI
+$KAIROS
 ```
 
 ## 5. (text only)
@@ -64,18 +64,18 @@ The pixels are read locally, never uploaded, and hashed into your 256-bit secret
 
 kairoschain.org/docs
 
-$KAI
+$KAIROS
 ```
 
 ## 6. kairos-keyart.png
 ```
-$KAI comes first. The chain comes next.
+$KAIROS comes first. The chain comes next.
 
-At Kairos mainnet, every $KAI holder migrates 1:1 into native KAI, written into genesis.
+At Kairos mainnet, every $KAIROS holder migrates 1:1 into native KAIROS, written into genesis.
 
-After that, every new KAI is mined. 0% dev allocation. 100% to miners.
+After that, every new KAIROS is mined. 0% dev allocation. 100% to miners.
 
-$KAI
+$KAIROS
 ```
 
 ## 7. (text only)
@@ -97,5 +97,5 @@ One block. One proof. Everything before it.
 
 kairoschain.org
 
-$KAI
+$KAIROS
 ```

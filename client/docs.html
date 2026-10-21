@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Docs · Kairos Chain</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/k.css"><link rel="stylesheet" href="/kairos.css">
-<meta name="description" content="Kairos Chain documentation: consensus, the recursive proof stack, live state, signatureless ownership, Photo Key, contracts, economics, mining and the $KAI migration.">
+<meta name="description" content="Kairos Chain documentation: consensus, the recursive proof stack, live state, signatureless ownership, Photo Key, contracts, economics, mining and the $KAIROS migration.">
 <style>
 .dl{display:grid;grid-template-columns:230px 1fr;gap:56px;padding:56px 0 40px}
 .side{position:sticky;top:90px;align-self:start;font-size:14.5px}.side h6{font-family:'Geist Mono';font-weight:500;font-size:10.5px;letter-spacing:.2em;color:var(--ink3);text-transform:uppercase;margin:22px 0 8px}.side h6:first-child{margin-top:0}
@@ -22,11 +22,11 @@
  <h6>Protocol</h6><a href="#consensus">Consensus</a><a href="#proofs">Proof stack</a><a href="#state">Live state</a><a href="#transactions">Transactions</a><a href="#receipts">Receipts</a>
  <h6>Use</h6><a href="#ownership">Ownership</a><a href="#photokey">Photo Key</a><a href="#contracts">Contracts</a>
  <h6>Network</h6><a href="#economics">Economics</a><a href="#mining">Mining</a><a href="#node">Run a node</a><a href="#security">Security model</a>
- <h6>$KAI</h6><a href="#migration">Migration</a><a href="#params">Parameters</a><a href="#source">Open source</a>
+ <h6>$KAIROS</h6><a href="#migration">Migration</a><a href="#params">Parameters</a><a href="#source">Open source</a>
 </aside>
 <article class="doc">
  <div class="eyebrow"><b>●</b> Documentation</div><h1>Kairos Chain <span class="it red">docs.</span></h1>
- <p class="intro">Everything about how Kairos Chain works: how blocks are proven and ordered, how state is kept small, how you own coins without a key, and how $KAI becomes native KAI.</p>
+ <p class="intro">Everything about how Kairos Chain works: how blocks are proven and ordered, how state is kept small, how you own coins without a key, and how $KAIROS becomes native KAIROS.</p>
 
  <h2 id="overview"><small>01 · START</small>Overview</h2>
  <p>Kairos Chain is a <b>proof-native Layer 1 ordered by proof of work</b>. Each block contains a recursive proof, the <b>HistoryStep terminal</b>, that the new block is valid and that the previous terminal was valid. By induction, one terminal proves the whole chain from genesis.</p>
@@ -89,13 +89,13 @@
  <p>Ready-made templates: refundable payment, timelocked vault, delegated allowance, budget per period, recurring payment, and gradual tranche release. Custom programs compile through the <b>Pruv</b> language, which checks declared postconditions with the Z3 solver.</p>
 
  <h2 id="economics"><small>11 · NETWORK</small>Economics</h2>
- <p>Native KAI has 6 decimals (1 KAI = 1,000,000 μKAI). After genesis, every new KAI is created by mining. <b>There is no developer allocation in the block reward: 100% goes to the miner who proves the block.</b></p>
- <table><tr><th>Year</th><th>Reward per block</th><th>New KAI that year</th></tr>
+ <p>Native KAIROS has 6 decimals (1 KAI = 1,000,000 μKAIROS). After genesis, every new KAIROS is created by mining. <b>There is no developer allocation in the block reward: 100% goes to the miner who proves the block.</b></p>
+ <table><tr><th>Year</th><th>Reward per block</th><th>New KAIROS that year</th></tr>
   <tr><td>1</td><td class="n">16</td><td class="n">16,819,200</td></tr><tr><td>2</td><td class="n">11.30</td><td class="n">11,878,560</td></tr><tr><td>3</td><td class="n">8</td><td class="n">8,409,600</td></tr><tr><td>4</td><td class="n">5.65</td><td class="n">5,939,280</td></tr>
   <tr><td>5</td><td class="n">4</td><td class="n">4,204,800</td></tr><tr><td>6</td><td class="n">2.83</td><td class="n">2,974,896</td></tr><tr><td>7</td><td class="n">2</td><td class="n">2,102,400</td></tr><tr><td>8</td><td class="n">1.41</td><td class="n">1,482,192</td></tr><tr><td>9+</td><td class="n">1 (tail)</td><td class="n">1,051,200 per year</td></tr></table>
- <p>A "year" is 1,051,200 blocks at the 30-second target. The permanent 1 KAI tail keeps miners paid to prove blocks forever.</p>
+ <p>A "year" is 1,051,200 blocks at the 30-second target. The permanent 1 KAIROS tail keeps miners paid to prove blocks forever.</p>
  <h3>Fees</h3>
- <p>5,000 μKAI per transaction, plus 100 μKAI per input and 700 μKAI per output, plus a <b>state-growth fee</b> of 2,500 μKAI × pressure for each net-new slot. Pressure is 1× below 50% occupancy, then 2×, 4× and 8× at 50%, 75% and 90%. The state-growth part is <b>burned</b>; the rest goes to the miner. Consolidating outputs avoids the burn.</p>
+ <p>5,000 μKAIROS per transaction, plus 100 μKAIROS per input and 700 μKAIROS per output, plus a <b>state-growth fee</b> of 2,500 μKAIROS × pressure for each net-new slot. Pressure is 1× below 50% occupancy, then 2×, 4× and 8× at 50%, 75% and 90%. The state-growth part is <b>burned</b>; the rest goes to the miner. Consolidating outputs avoids the burn.</p>
 
  <h2 id="mining"><small>12 · NETWORK</small>Mining</h2>
  <p>A miner is a <b>proving full node backed by hashpower</b>. Mining needs a 64-bit CPU with carry-less multiplication: x86-64 with SSE4.1 + PCLMULQDQ (AVX2 or AVX-512 with VPCLMUL is faster), or ARM64 with NEON + PMULL. No GPU is used.</p>
@@ -114,12 +114,12 @@ kairos-cli walletBalance</pre>
  <p>Kairos uses only hash-based, binary-field cryptography: no elliptic curves, no pairings, no trusted setup, and no public keys for ownership. The upstream protocol publishes an executable soundness certificate assessing the design at <b>NIST post-quantum Category 1, conditionally</b>, with a dominant half-success gate-depth floor of about 2<sup>173.39</sup>.</p>
  <p>The word "conditional" matters. The assessment assumes Poseidon2b behaves as an ideal random oracle, assumes proximity-gap conjectures for the codes used, and models the compiler as ideal. It is a careful accounting tool, not a machine-checked proof, and the implementation has not had an independent third-party audit.</p>
 
- <h2 id="migration"><small>15 · $KAI</small>Migration</h2>
- <p>$KAI exists first as a Solana token launched on pump.fun. When Kairos mainnet launches, holders move it into native KAI <b>one for one</b>:</p>
+ <h2 id="migration"><small>15 · $KAIROS</small>Migration</h2>
+ <p>$KAIROS exists first as a Solana token launched on pump.fun. When Kairos mainnet launches, holders move it into native KAIROS <b>one for one</b>:</p>
  <ol><li>A holder snapshot and the migration rules are published before mainnet, with the snapshot time announced in advance.</li>
   <li>Holders bind their Solana wallet to a <code>k1…</code> Kairos address through the migration portal.</li>
   <li>Bound balances are written into the genesis block as migration allocations, visible to anyone who inspects genesis.</li>
-  <li>After genesis, all new KAI comes from mining.</li></ol>
+  <li>After genesis, all new KAIROS comes from mining.</li></ol>
  <div class="note">The migration portal, snapshot height and the exact genesis file format are published with the public testnet. Nothing here asks you to send tokens anywhere today.</div>
 
  <h2 id="params"><small>16 · REFERENCE</small>Parameters</h2>
@@ -127,12 +127,12 @@ kairos-cli walletBalance</pre>
   <tr><td>Block time</td><td class="n">30 s mean</td></tr><tr><td>Difficulty</td><td class="n">ASERT, 6 blocks / 180 s half-life</td></tr><tr><td>Finality window</td><td class="n">18 blocks</td></tr>
   <tr><td>PoW nonce</td><td class="n">128-bit</td></tr><tr><td>Trace / challenge fields</td><td class="n">GF(2¹²⁸) / GF(2²⁵⁶)</td></tr><tr><td>Terminal proof cap</td><td class="n">1,100,000 B</td></tr>
   <tr><td>Authorization cap</td><td class="n">256 KiB wire (≈92.7 KB worst case)</td></tr><tr><td>State slots</td><td class="n">2²⁴ → 2³²</td></tr><tr><td>Tx page</td><td class="n">8 in / 2 out, 323 B</td></tr>
-  <tr><td>Max atomic spend</td><td class="n">128 pages</td></tr><tr><td>Address</td><td class="n">bech32m k1…</td></tr><tr><td>Units</td><td class="n">1 KAI = 10⁶ μKAI</td></tr><tr><td>Ports</td><td class="n">P2P 9700 · RPC 9701</td></tr></table>
+  <tr><td>Max atomic spend</td><td class="n">128 pages</td></tr><tr><td>Address</td><td class="n">bech32m k1…</td></tr><tr><td>Units</td><td class="n">1 KAI = 10⁶ μKAIROS</td></tr><tr><td>Ports</td><td class="n">P2P 9700 · RPC 9701</td></tr></table>
 
  <h2 id="source"><small>17 · REFERENCE</small>Open source</h2>
  <p>The Kairos node is public at <a href="https://github.com/kairoschain/kairos" target="_blank" rel="noopener" style="text-decoration:underline">github.com/kairoschain/kairos</a>: every change from upstream is listed in <code>KAIROS-FORK.md</code>.</p>
  <p>Kairos Chain is an independent fork of <a href="https://github.com/proof-native/parano1d" target="_blank" rel="noopener" style="text-decoration:underline">Parano1d</a>, an open-source proof-native Layer 1 by Ignotus Nemo, released under the Apache-2.0 license. Its cryptographic core builds on <b>binius64</b> (Irreducible), <b>hekate-math</b> (Oumuamua Labs) and <b>bolt-rs</b> (Bain Capital Crypto, Succinct). Kairos runs its own network with its own genesis, economics and brand, and keeps every original copyright and NOTICE attribution, as the license requires.</p>
- <p>Kairos Chain is not affiliated with, endorsed by, or a successor to Parano1d or its NOID coin. KAI and NOID are separate assets on separate networks.</p>
+ <p>Kairos Chain is not affiliated with, endorsed by, or a successor to Parano1d or its NOID coin. KAIROS and NOID are separate assets on separate networks.</p>
 </article></main>
 <script src="/k.js"></script><script>chrome('/docs');
 const links = [...document.querySelectorAll('#side a')], secs = links.map((a) => document.querySelector(a.getAttribute('href')));

@@ -28,8 +28,8 @@
  <div class="pan"><h3><span>Make a call</span><span id="bal"></span></h3>
   <div class="f">
    <label class="w"><span>Who is calling</span><select id="who"></select></label>
-   <label><span>Block height</span><input id="h" type="number" min="0"></label><label><span>Fee (μKAI)</span><input id="fee" type="number" min="0" value="5"></label>
-   <label class="w"><span>Pay out (μKAI)</span><input id="pay" type="number" min="0" value="50"></label>
+   <label><span>Block height</span><input id="h" type="number" min="0"></label><label><span>Fee (μKAIROS)</span><input id="fee" type="number" min="0" value="5"></label>
+   <label class="w"><span>Pay out (μKAIROS)</span><input id="pay" type="number" min="0" value="50"></label>
    <label class="w"><span>Pay to</span><input id="to" spellcheck="false"></label>
    <label class="w"><span>Call type</span><div class="tog"><button id="cont" class="on">Pay &amp; continue</button><button id="close">Close contract</button></div></label>
   </div>
@@ -57,7 +57,7 @@ function reset() { const b = build(); LOG = []; $('log').innerHTML = ''; $('res'
   drawProg(b.program); drawRegs(); }
 function drawProg(prog, trace) { const lines = V.describe(prog || []).map((l) => l.replace(/^\d+\s+/, "")), tr = trace || [];
   $('prog').innerHTML = lines.map((l, i) => { const t = tr.find((x) => x.pc === i), keep = /^keep$/.test(l.trim()) && !t; return `<div class="${t ? (t.error ? 'err' : t.active ? 'hit' : 'live') : keep ? '' : 'live'}"><i>${String(i).padStart(2, '0')}</i><span>${l || 'keep'}</span></div>`; }).join('') || '<p class="dim" style="padding:10px 0">No program: this contract is enforced by its policy alone (who may close it, and when).</p>'; }
-function drawRegs() { $('regs').innerHTML = [['state0', S.state0], ['state1', S.state1], ['contract balance', BAL + ' μKAI'], ['calls made', LOG.length]].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join(''); $('bal').textContent = BAL + ' μKAI held'; }
+function drawRegs() { $('regs').innerHTML = [['state0', S.state0], ['state1', S.state1], ['contract balance', BAL + ' μKAIROS'], ['calls made', LOG.length]].map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join(''); $('bal').textContent = BAL + ' μKAIROS held'; }
 function call() { const b = build(); if (b.err) return; const who = $('who').value, pay = TERM ? 0n : BigInt($('pay').value || 0), fee = BigInt($('fee').value || 0), h = BigInt($('h').value || 0);
   const amt = (x) => x == null ? 0n : typeof x === "object" ? (x.amount ?? 0n) : x;
   const c = { height: h, fee, terminal: TERM, input: { amount: BAL, slot: 7, creation_id: 1 }, retained_slot: 7, signer: who === 'stranger' ? 'stranger' : who };
@@ -65,7 +65,7 @@ function call() { const b = build(); if (b.err) return; const who = $('who').val
   let r; try { r = V.run(b.program, b.policy, S, c); } catch (e) { r = { ok: false, error: { code: 'Input', message: e.message } }; }
   drawProg(b.program, r.trace);
   if (r.ok) { BAL = TERM ? 0n : BigInt(r.retained); if (r.newState) S = r.newState; }
-  const msg = r.ok ? (TERM ? `Closed. ${amt(r.payout)} μKAI paid out.` : `Paid ${amt(r.payout)} μKAI. The contract continues with ${BAL} μKAI and updated counters.`) : `${r.error.code}${r.error.kind ? ' · ' + r.error.kind : ''}${r.error.step != null ? ' at step ' + r.error.step : ''}: ${r.error.message}${r.error.step != null ? ' → failed rule: ' + V.describe(b.program)[r.error.step].replace(/^\d+\s+/, '') : ''}`;
+  const msg = r.ok ? (TERM ? `Closed. ${amt(r.payout)} μKAIROS paid out.` : `Paid ${amt(r.payout)} μKAIROS. The contract continues with ${BAL} μKAIROS and updated counters.`) : `${r.error.code}${r.error.kind ? ' · ' + r.error.kind : ''}${r.error.step != null ? ' at step ' + r.error.step : ''}: ${r.error.message}${r.error.step != null ? ' → failed rule: ' + V.describe(b.program)[r.error.step].replace(/^\d+\s+/, '') : ''}`;
   $('res').innerHTML = `<div class="res ${r.ok ? 'ok' : 'no'}"><b class="h">${r.ok ? 'Accepted' : 'Rejected'}${r.branch ? ' · ' + r.branch + ' branch' : ''}</b><p>${msg}</p>${r.ok ? `<div class="kv"><div><span>payout</span><b>${amt(r.payout)}</b></div><div><span>fee</span><b>${r.fee}</b></div><div><span>retained</span><b>${r.retained}</b></div><div><span>lifecycle</span><b>${r.lifecycle}</b></div></div>` : ''}</div>`;
   LOG.unshift(`<div><b class="${r.ok ? '' : 'x'}">${r.ok ? '✓' : '✗'}</b> h=${h} · ${who} · ${TERM ? 'close' : 'pay ' + pay} → ${r.ok ? 'ok' : r.error.code}</div>`); if (!r.ok) LOG[0] = LOG[0]; $('log').innerHTML = LOG.join(''); if (!r.ok) LOG.shift(); drawRegs(); }
 pick('recurring_payment');

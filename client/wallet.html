@@ -38,10 +38,10 @@
    <div class="warn"><b>Anyone with the photo or the master secret controls this wallet.</b> Nothing is stored or sent anywhere. Close the tab and it's gone from this page.</div></div></div>
 </div>
 <div class="pan" id="tn" style="display:none;margin-bottom:20px"><h3>Web testnet wallet <span style="float:right;color:var(--ink3)" id="tnh"></span></h3>
- <div class="tng"><div><div class="lbl"><span>Balance · test KAI</span></div><div style="font-size:44px;font-weight:800;letter-spacing:-.04em" id="tnb">0</div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn pri" onclick="drip()">Get 25 test KAI</button><a class="btn" id="mlink" href="/mine">Mine to this wallet</a></div>
+ <div class="tng"><div><div class="lbl"><span>Balance · test KAIROS</span></div><div style="font-size:44px;font-weight:800;letter-spacing:-.04em" id="tnb">0</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn pri" onclick="drip()">Get 25 test KAIROS</button><a class="btn" id="mlink" href="/mine">Mine to this wallet</a></div>
   <label style="display:flex;gap:8px;align-items:center;margin-top:14px;font-size:13px;color:var(--ink3)"><input type="checkbox" id="rem"> remember this key on this device</label><p class="dim" id="tnm" style="font-size:13px;margin-top:10px"></p></div>
-  <div><div class="lbl"><span>Send</span></div><input class="inp2" id="sto" placeholder="to k1…" spellcheck="false"><input class="inp2" id="samt" placeholder="amount in KAI" inputmode="decimal" style="margin-top:8px"><button class="btn" style="margin-top:10px;width:100%;justify-content:center" onclick="sendTx()">Send</button>
+  <div><div class="lbl"><span>Send</span></div><input class="inp2" id="sto" placeholder="to k1…" spellcheck="false"><input class="inp2" id="samt" placeholder="amount in KAIROS" inputmode="decimal" style="margin-top:8px"><button class="btn" style="margin-top:10px;width:100%;justify-content:center" onclick="sendTx()">Send</button>
   <div class="more" id="tna" style="margin-top:12px"></div></div></div>
  <p class="dim" style="font-size:12.5px;margin-top:14px">On the web testnet a spend reveals the spend secret of a one-time address, so the wallet moves your change to the next fresh address and retires the old one. Mainnet spends use zero-knowledge proofs instead.</p></div>
 <div class="pan chk" style="margin-bottom:20px"><h3>Check an address</h3><input id="chk" placeholder="paste a k1… address" spellcheck="false"><p id="chkr" class="dim">Checksum and format are verified locally.</p></div>
@@ -51,7 +51,7 @@
 const K = window.KairosKeys; let M = null, N = 1;
 function showKey(masterHex, keyId) { M = masterHex; setTimeout(scan, 50); N = 1; $('empty').style.display = 'none'; $('out').classList.add('on');
   const a = K.address(M, 0); $('a0').textContent = a; $('kid').textContent = keyId || K.keyId(M); $('sec').textContent = M; $('sec').classList.remove('show'); $('more').innerHTML = ''; $('mt').textContent = '';
-  $('tw').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(`My Kairos Chain address, made from a photo in my browser:\n\n${a}\n\nNo public key. No signature. Just a secret and a zero-knowledge proof.\n\nkairoschain.org/wallet\n\n$KAI`); }
+  $('tw').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(`My Kairos Chain address, made from a photo in my browser:\n\n${a}\n\nNo public key. No signature. Just a secret and a zero-knowledge proof.\n\nkairoschain.org/wallet\n\n$KAIROS`); }
 function moreAddr() { if (!M) return; const a = K.address(M, N); $('more').insertAdjacentHTML('beforeend', `<div onclick="copy('${a}')"><span style="color:var(--gold)">${N}</span><span>${a}</span></div>`); $('mt').textContent = N + 1 + ' total'; N++; }
 function rnd() { const m = K.randomMaster(); showKey(m); $('dz').innerHTML = '<b>Random secret generated</b><span>back up the master secret: there is no photo to recover from</span>'; }
 async function handle(f) {
@@ -80,10 +80,10 @@ async function scan() { if (!M) return; $('tn').style.display = 'block'; const o
   for (let i = 0; i < 60 && gap < 3; i++) { const a = K.address(M, i), r = await api('/api/tn/address/' + a); const used = !!(r.retired || (r.history && r.history.length) || r.pending);
     out.push({ i, a, bal: BigInt(r.balance || 0), coins: r.coins || [], retired: r.retired, used }); gap = used ? 0 : gap + 1; }
   ACC = out; $('tnb').textContent = kai(out.reduce((t, x) => t + x.bal, 0n)); const fresh = recvAddr(); $('mlink').href = '/mine#' + fresh;
-  $('tna').innerHTML = out.filter((x) => x.used || x.bal > 0n).map((x) => '<div><span style="color:var(--gold)">' + x.i + '</span><span>' + x.a.slice(0, 16) + '…' + x.a.slice(-8) + ' · ' + kai(x.bal) + ' KAI' + (x.retired ? ' · retired' : '') + '</span></div>').join('') || '<p class="dim" style="font-size:13px">No testnet coins yet.</p>';
+  $('tna').innerHTML = out.filter((x) => x.used || x.bal > 0n).map((x) => '<div><span style="color:var(--gold)">' + x.i + '</span><span>' + x.a.slice(0, 16) + '…' + x.a.slice(-8) + ' · ' + kai(x.bal) + ' KAIROS' + (x.retired ? ' · retired' : '') + '</span></div>').join('') || '<p class="dim" style="font-size:13px">No testnet coins yet.</p>';
   try { const sm = await api('/api/explorer/summary'); $('tnh').textContent = 'block ' + sm.height; } catch {} }
 function recvAddr() { const lastUsed = ACC.reduce((m, x) => (x.used ? x.i : m), -1); return K.address(M, lastUsed + 1); }
-async function drip() { const r = await api('/api/tn/faucet', { to: recvAddr() }); $('tnm').textContent = r.error ? r.error : 'Faucet sent 25 test KAI. It lands in the next block (about 30 s).'; setTimeout(scan, 1500); }
+async function drip() { const r = await api('/api/tn/faucet', { to: recvAddr() }); $('tnm').textContent = r.error ? r.error : 'Faucet sent 25 test KAIROS. It lands in the next block (about 30 s).'; setTimeout(scan, 1500); }
 async function sendTx() { const to = $('sto').value.trim(), v = K.validateAddress(to); if (!v.valid) return toast('Enter a valid k1 address');
   const amt = BigInt(Math.round(parseFloat($('samt').value) * 1e6) || 0); if (amt <= 0n) return toast('Enter an amount');
   const fee8 = BigInt((await api('/api/tn/fee?in=8&out=2')).min), src = ACC.find((x) => !x.retired && x.coins.length && x.coins.slice(0, 8).reduce((t, c) => t + BigInt(c.amount), 0n) >= amt + fee8);

@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mine · Kairos Chain</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/k.css"><link rel="stylesheet" href="/kairos.css">
-<meta name="description" content="Mine Kairos web-testnet blocks from your browser. Poseidon2b proof of work, 30-second blocks, 16 KAI per block.">
+<meta name="description" content="Mine Kairos web-testnet blocks from your browser. Poseidon2b proof of work, 30-second blocks, 16 KAIROS per block.">
 <meta property="og:title" content="Mine a Kairos block from a browser tab."><meta property="og:image" content="/og.png">
 <style>
 .hd{padding:50px 0 10px}.hd h1{font-weight:800;letter-spacing:-.055em;line-height:.92;font-size:clamp(46px,6vw,92px);margin-top:16px}.hd p{font-size:18px;color:var(--ink2);max-width:720px;margin-top:16px}
@@ -16,7 +16,7 @@
 @media(max-width:900px){.lay{grid-template-columns:1fr}.big{grid-template-columns:1fr 1fr}}
 </style></head><body>
 <main class="wrap">
-<section class="hd"><div class="eyebrow"><b>●</b> Web testnet · mining</div><h1>Mine a Kairos block<br><span class="it red">from this tab.</span></h1><p>Your browser runs the exact Kairos proof-of-work hash, Poseidon2b over the block header, against the live web testnet. Find a digest below the target and the block, and its 16 KAI reward, is yours.</p></section>
+<section class="hd"><div class="eyebrow"><b>●</b> Web testnet · mining</div><h1>Mine a Kairos block<br><span class="it red">from this tab.</span></h1><p>Your browser runs the exact Kairos proof-of-work hash, Poseidon2b over the block header, against the live web testnet. Find a digest below the target and the block, and its 16 KAIROS reward, is yours.</p></section>
 <div class="lay">
  <div class="pan"><h3><span>Your miner</span><span id="st">idle</span></h3>
   <input class="in" id="addr" placeholder="Reward address (k1…)" spellcheck="false">
@@ -25,7 +25,7 @@
   <canvas id="dial" width="680" height="680"></canvas>
   <div class="big"><div><span>Hashrate</span><b id="hr">0</b></div><div><span>Blocks found</span><b class="g" id="bf">0</b></div><div><span>Chain height</span><b id="ht">—</b></div></div>
   <div class="log" id="log"></div>
-  <p class="note">The web testnet runs the real Kairos PoW digest, block id and ASERT difficulty, ported bit for bit. Its blocks don't carry recursive proofs yet; those arrive with the node testnet. Test KAI has no value.</p></div>
+  <p class="note">The web testnet runs the real Kairos PoW digest, block id and ASERT difficulty, ported bit for bit. Its blocks don't carry recursive proofs yet; those arrive with the node testnet. Test KAIROS has no value.</p></div>
  <div class="pan"><h3><span>Leaderboard</span><span id="lb">live</span></h3><div id="mn"></div></div>
 </div></main>
 <script src="/k.js"></script><script>chrome('/mine');
@@ -39,7 +39,7 @@ async function work() { if (!on) return; try { tpl = await getTpl(); } catch (e)
   W.forEach((w, i) => w.postMessage({ header: tpl.header, id: tpl.id, start: Math.floor(Math.random() * 2 ** 48) + i * 2 ** 40 })); }
 function onMsg(e) { const d = e.data; hashes += d.hashes || 0;
   if (d.found && d.id === tpl.id) { fetch('/api/tn/submit', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: d.id, nonce: d.found }) }).then((r) => r.json()).then((r) => {
-    if (r.ok) { found++; flash = 1; $('bf').textContent = found; log(`<b>block #${r.height} found</b> · +16 KAI to your address`); } else if (!/stale/.test(r.error)) log('<span class="w">' + r.error + '</span>'); work(); }); } }
+    if (r.ok) { found++; flash = 1; $('bf').textContent = found; log(`<b>block #${r.height} found</b> · +16 KAIROS to your address`); } else if (!/stale/.test(r.error)) log('<span class="w">' + r.error + '</span>'); work(); }); } }
 function start() { const a = $('addr').value.trim(); if (!/^k1/.test(a)) return toast('Paste your k1 reward address first'); try { localStorage.setItem('kai_mine', a); } catch {}
   on = true; W = Array.from({ length: threads }, () => { const w = new Worker('/tn-miner.js'); w.onmessage = onMsg; return w; }); $('go').textContent = 'Stop mining'; $('st').textContent = 'mining · ' + threads + ' thread' + (threads > 1 ? 's' : ''); log('started with ' + threads + ' thread' + (threads > 1 ? 's' : '')); work(); }
 function stop() { on = false; W.forEach((w) => w.terminate()); W = []; $('go').textContent = 'Start mining'; $('st').textContent = 'idle'; }

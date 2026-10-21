@@ -58,7 +58,7 @@ const box = (x, y, w, h, title, sub, c = D2, d = 0, glow = '') => `<g class="ap"
 const svg = (inner) => `<svg viewBox="0 0 640 560">${inner}</svg>`;
 // ---------- chapters ----------
 const CH = [
- { id: 'cover', k: 'Kairos Chain · $KAI', h: 'Kairos.<span class="tag">The proof‑native <span class="gt">Layer 1 blockchain.</span></span>', big: 1,
+ { id: 'cover', k: 'Kairos Chain · $KAIROS', h: 'Kairos.<span class="tag">The proof‑native <span class="gt">Layer 1 blockchain.</span></span>', big: 1,
    p: 'On Kairos, <b>every block proves the entire chain is valid</b>. Anyone can verify all of it in about a second, with no signatures to steal and no trusted setup.',
    tri: [['O(1) sync', 'verify one proof, not all history'], ['Keyless', 'ownership proven, never signed'], ['Living state', 'storage follows live use']],
    cta: [['Why it matters →', '#debt', 1], ['Whitepaper', '/whitepaper']],
@@ -136,9 +136,9 @@ const CH = [
    s: () => { const t = ['REFUND', 'VAULT', 'ALLOWANCE', 'BUDGET', 'RECURRING', 'UNLOCK']; let o = T(60, 90, 'APPLICATIONS · GUI · CLI · API', W);
      t.forEach((n, i) => { const x = 60 + (i % 3) * 180, y = 120 + Math.floor(i / 3) * 96; o += `<g class="ap" ${at(.1 * i)}>${Rc(x, y, 160, 74, i === 1 ? G : D2, 'rgba(10,13,22,.9)', 12, i === 1 ? 'gl' : '')}${T(x + 80, y + 42, n, i === 1 ? G : W, 'middle', 10.5)}${P(`M${x + 80} ${y + 74} L${x + 80} ${y + 96 + (i < 3 ? 96 : 0)}`, G, .7, 'fl2', 'stroke-opacity=".35"')}</g>`; });
      return svg(o + `<g class="ap" ${at(.9)}>${Rc(60, 400, 520, 56, G, 'rgba(14,12,8,.94)', 12, 'gl')}${T(320, 434, 'ONE PROVED INTEGER CORE', G, 'middle', 11)}</g>${T(320, 490, 'YOUR PROGRAM · THE SAME BLOCK PROOF', 'rgba(244,241,234,.4)', 'middle', 9)}`); } },
- { id: 'kai', k: '15 · $KAI', h: 'The token comes first.<br><span class="gt">The chain comes next.</span>', p: '$KAI launches on pump.fun so the community forms before the network does. At Kairos mainnet, every holder migrates <b>one for one into native KAI</b>, written into the genesis block. After genesis, every new KAI is mined: no premine on chain, <b>no developer allocation, 100% to miners</b>.',
-   spec: [['today', '$KAI on Solana · pump.fun'], ['at genesis', 'Native KAI, migrated 1:1'], ['block reward', '16 KAI, stepping down to a 1 KAI tail']], cta: [['$KAI', '#kai', 1], ['Roadmap', '/roadmap']], ca: 1,
-   s: () => { const st = [['$KAI', 'SOLANA · PUMP.FUN', G2], ['SNAPSHOT', 'ANNOUNCED IN ADVANCE', D2], ['BIND', 'SOLANA → k1 ADDRESS', B], ['GENESIS', 'NATIVE KAI · 1:1', G]]; let o = '';
+ { id: 'kai', k: '15 · $KAIROS', h: 'The token comes first.<br><span class="gt">The chain comes next.</span>', p: '$KAIROS launches on pump.fun so the community forms before the network does. At Kairos mainnet, every holder migrates <b>one for one into native KAIROS</b>, written into the genesis block. After genesis, every new KAIROS is mined: no premine on chain, <b>no developer allocation, 100% to miners</b>.',
+   spec: [['today', '$KAIROS on Solana · pump.fun'], ['at genesis', 'Native KAIROS, migrated 1:1'], ['block reward', '16 KAIROS, stepping down to a 1 KAIROS tail']], cta: [['$KAIROS', '#kai', 1], ['Roadmap', '/roadmap']], ca: 1,
+   s: () => { const st = [['$KAIROS', 'SOLANA · PUMP.FUN', G2], ['SNAPSHOT', 'ANNOUNCED IN ADVANCE', D2], ['BIND', 'SOLANA → k1 ADDRESS', B], ['GENESIS', 'NATIVE KAIROS · 1:1', G]]; let o = '';
      st.forEach(([a, b, c], i) => { const x = 90 + i * 155; o += `<g class="ap" ${at(.25 * i)}>${i ? P(`M${x - 115} 270 L${x - 40} 270`, c, 1.2, 'fl') : ''}${Ci(x, 270, i === 3 ? 44 : 34, c, 1.5, 'rgba(10,13,22,.92)', c === G ? 'gl' : c === B ? 'glb' : '')}${T(x, 274, a, c === D2 ? W : c, 'middle', i === 3 ? 11 : 10)}${T(x, 340, b, 'rgba(244,241,234,.45)', 'middle', 8.5)}</g>`; });
      return svg(o + `<g class="ap" ${at(1.2)}>${Rc(90, 410, 460, 70, D2, 'rgba(10,13,22,.85)', 14)}${T(114, 440, 'AFTER GENESIS', 'rgba(244,241,234,.45)', 'start', 9)}${T(114, 462, '100% OF BLOCK REWARDS → MINERS', W, 'start', 11)}${T(526, 458, '0%', G, 'end', 24)}${T(526, 474, 'DEV ALLOCATION', 'rgba(244,241,234,.4)', 'end', 8)}</g>`); } },
  { id: 'moment', k: 'καιρός · the decisive moment', h: 'Chronos is time passing.<br><span class="gt">Kairos is the moment.</span>', p: 'Every other chain counts time. Kairos proves it. One block, one proof, everything before it. <b>This is the moment.</b>', big: 1,
@@ -151,7 +151,7 @@ const deck = $('deck');
 deck.innerHTML = CH.map((c, i) => `<section class="ch" id="${c.id}" data-i="${i}"><div><div class="kick rv">${c.k}</div>${i === 0 ? '<h1 class="rv" style="--d:.1">' + c.h + '</h1>' : '<h2 class="rv" style="--d:.1">' + c.h + '</h2>'}<p class="lead rv" style="--d:.2">${c.p}</p>
   ${c.tri ? `<div class="tri rv" style="--d:.3">${c.tri.map(([a, b]) => `<div><b>${a}</b><span>${b}</span></div>`).join('')}</div>` : ''}
   ${c.spec ? `<div class="spec rv" style="--d:.3">${c.spec.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>` : ''}
-  ${c.ca ? `<div class="rv" style="--d:.35"><span class="ca-pill"><em>$KAI CA</em><span id="ca">${KAI.ca || 'published at launch'}</span>${KAI.ca ? `<button class="btn" style="height:30px;padding:0 12px" onclick="copy(KAI.ca)">copy</button>` : ''}</span></div>` : ''}
+  ${c.ca ? `<div class="rv" style="--d:.35"><span class="ca-pill"><em>$KAIROS CA</em><span id="ca">${KAI.ca || 'published at launch'}</span>${KAI.ca ? `<button class="btn" style="height:30px;padding:0 12px" onclick="copy(KAI.ca)">copy</button>` : ''}</span></div>` : ''}
   ${c.cta ? `<div class="cta rv" style="--d:.4">${c.cta.map(([t, u, p]) => `<a class="btn ${p ? 'pri' : ''}" href="${u}">${t}</a>`).join('')}</div>` : ''}</div>
   <div class="scene">${c.s()}</div></section>`).join('');
 chrome('/');
