@@ -17,9 +17,13 @@ async function testnetRoute(p, u, send, req, body) { const t = tn(), ip = String
     if (p === '/api/tn/template') return send(200, t.template(u.searchParams.get('miner') || '')), true;
     if (p === '/api/tn/fee') return send(200, { min: t.minFee(+u.searchParams.get('in') || 1, +u.searchParams.get('out') || 2) }), true;
     if ((m = p.match(/^\/api\/tn\/address\/(.+)$/)) && K1.test(m[1])) { const a = t.address(m[1]); return send(a ? 200 : 400, a || { error: 'bad address' }), true; }
+    if (p === '/api/tn/assets') return send(200, { assets: t.assets() }), true;
+    if ((m = p.match(/^\/api\/tn\/asset\/([0-9a-zA-Z]{2,24})$/))) { const a = t.asset(m[1]); return send(a ? 200 : 404, a || { error: 'unknown asset' }), true; }
+    if ((m = p.match(/^\/api\/tn\/holdings\/(.+)$/)) && K1.test(m[1])) return send(200, { holdings: t.holdings(m[1]) || [] }), true;
     if (req.method !== 'POST') return send(404, { error: 'unknown endpoint' }), true;
     const b = await body();
     if (p === '/api/tn/submit') { const r = t.submitBlock(b.id, String(b.nonce || '')); return send(r.error ? 400 : 200, r), true; }
+    if (p === '/api/tn/op') { const r = t.submitOp(b); return send(r.error ? 400 : 200, r), true; }
     if (p === '/api/tn/tx') { const r = t.submitTx(b); return send(r.error ? 400 : 200, r), true; }
     if (p === '/api/tn/faucet') { const r = t.faucet(String(b.to || ''), ip); return send(r.error ? 400 : 200, r), true; }
     return send(404, { error: 'unknown endpoint' }), true;

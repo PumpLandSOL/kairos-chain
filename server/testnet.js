@@ -5,10 +5,10 @@
 // revealing the spend secret of a one-time address; the address is retired after its first spend.
 'use strict';
 const fs = require('fs'), path = require('path'), { Worker } = require('worker_threads');
-const T = require('../client/tn-core.js'), { K, I } = T, { toHex, fromHex, Sponge, capacityIv, compressWithTag, fromLE } = I;
+const DEX = require('./dex.js'); const T = require('../client/tn-core.js'), { K, I } = T, { toHex, fromHex, Sponge, capacityIv, compressWithTag, fromLE } = I;
 let DATA = process.env.DATA_PATH || path.join(__dirname, '..', 'data');
 try { fs.mkdirSync(DATA, { recursive: true }); fs.accessSync(DATA, fs.constants.W_OK); } catch { console.error('DATA_PATH ' + DATA + ' is not writable (is the disk mounted?); using ./data, the testnet will reset on redeploy'); DATA = path.join(__dirname, '..', 'data'); fs.mkdirSync(DATA, { recursive: true }); }
-const FILE = path.join(DATA, 'testnet.json'), MU = 1_000_000n, REWARD = 16n * MU, GEN_TARGET = T.bigToLeHex(1n << 244n), DEPTH = 24;
+const FILE = path.join(DATA, 'testnet.json'), MU = 1_000_000n, REWARD = 16n * MU, GEN_TARGET = T.bigToLeHex(1n << BigInt(process.env.TESTNET_TARGET_BITS || 244)), DEPTH = 24;
 const FEE = { base: 5000n, input: 100n, output: 700n, growth: 2500n }, FINAL = 18;
 // ---------- persistent state ----------
 let C;
@@ -26,6 +26,7 @@ const node = (d, i) => nodes.get(d + ':' + i) || ZERO[d];
 function setLeaf(i, s) { let h = s ? leafHash(s) : ZERO[0]; nodes.set('0:' + i, h); for (let d = 1; d <= DEPTH; d++) { const p = i >> d, l = node(d - 1, p * 2), r = node(d - 1, p * 2 + 1); h = compressWithTag('EXSTNOD_', l, r); nodes.set(d + ':' + p, h); } }
 const root = () => toHex(node(DEPTH, 0));
 for (const [i, s] of Object.entries(C.slots)) setLeaf(+i, s);
+C.dex = C.dex || DEX.fresh();
 // ---------- helpers ----------
 const tip = () => C.blocks[C.blocks.length - 1] || null, height = () => C.blocks.length; // genesis = block 0 at index 0
 const liveCount = () => Object.keys(C.slots).length;
@@ -50,11 +51,29 @@ function checkTx(tx) {
   tx.fee = fee.toString(); tx.burn = need.burn.toString(); tx.nonce = Date.now(); return null; }
 function submitTx(raw) { const tx = { inputs: (raw.inputs || []).map((x) => ({ slot: +x.slot, secret: String(x.secret || '').toLowerCase() })), outputs: (raw.outputs || []).map((o) => ({ to: String(o.to || '').trim(), amount: String(o.amount) })), fee: String(raw.fee || 0) };
   const e = checkTx(tx); if (e) return { error: e }; tx.id = txid(tx); mempool.push(tx); return { ok: true, txid: tx.id, fee: tx.fee }; }
+// ---------- native-asset operations ----------
+function submitOp(raw) { const secret = String(raw.secret || '').toLowerCase(); if (!/^[0-9a-f]{64}$/.test(secret)) return { error: 'missing spend secret' };
+  const from = toHex(I.deriveAddress(fromHex(secret))); if (C.revealed[from]) return { error: 'that address is retired; use your wallet\'s current address' };
+  let next; try { next = addrHex(String(raw.next || '')); } catch { return { error: 'bad change address' }; } if (next === from || C.revealed[next]) return { error: 'change must go to a fresh address' };
+  if (mempool.some((m) => m.inputs.some((x) => x.owner === from) || m.from === from)) return { error: 'this address already has a pending transaction; wait for the next block' };
+  const coins = bal(from).slice(0, 32); if (!coins.length) return { error: 'no KAIROS on this address (the network fee is paid in KAIROS)' };
+  const op = raw.op || {}; if (!['create', 'buy', 'sell', 'redeem', 'addLiquidity', 'removeLiquidity'].includes(op.type)) return { error: 'unknown operation' };
+  const fee = minFee(coins.length, 1).min, tx = { kind: 'op', from, next, op, inputs: coins.map((c) => ({ slot: c.slot, owner: from })), outputs: [], fee: fee.toString(), burn: '0', nonce: Date.now() };
+  const sum = coins.reduce((t, c) => t + BigInt(c.amount), 0n); if (sum < fee) return { error: 'not enough KAIROS for the network fee' };
+  try { const D = structuredClone(C.dex); DEX.migrate(D, from, next); DEX.apply(D, op, { owner: next, kaiIn: sum - fee, h: height(), ts: Math.floor(Date.now() / 1000), idFor: (tk) => assetId(tk, next) }); } catch (e) { return { error: e.message } }
+  tx.id = txid(tx); mempool.push(tx); return { ok: true, txid: tx.id, fee: tx.fee }; }
+const assetId = (ticker, owner) => toHex(I.blake3.hash(new TextEncoder().encode('kairos-asset:' + ticker + ':' + owner + ':' + height()))).slice(0, 24);
+function runOp(tx, S, D, alloc, writes) { const sum = tx.inputs.reduce((t, x) => t + BigInt(x.amount || 0), 0n), kaiIn = sum - BigInt(tx.fee); let out = kaiIn, res;
+  DEX.migrate(D, tx.from, tx.next);
+  try { const r = DEX.apply(D, tx.op, { owner: tx.next, kaiIn, h: height(), ts: Math.floor(Date.now() / 1000), idFor: (tk) => assetId(tk, tx.next) }); out = kaiIn - r.spent + r.received; res = { ok: true, note: r.note, burned: r.burned.toString(), asset: r.asset || tx.op.asset, out: r.out }; }
+  catch (e) { res = { ok: false, error: e.message, refunded: kaiIn.toString() }; }
+  tx.outputs = []; if (out > 0n) { const i = alloc(); S.slots[i] = { amount: out.toString(), cid: ++S.alloc, owner: tx.next }; writes.push(i); tx.outputs.push({ owner: tx.next, amount: out.toString(), slot: i }); }
+  tx.result = res; }
 // ---------- block assembly ----------
 function applyTxs(txs, minerHex, dry) { // returns new header bits; mutates state unless dry
-  const S = dry ? { slots: { ...C.slots }, free: [...C.free], next: C.next, alloc: C.alloc } : C, writes = [];
+  const S = dry ? { slots: { ...C.slots }, free: [...C.free], next: C.next, alloc: C.alloc } : C, writes = [], D = dry ? structuredClone(C.dex) : C.dex;
   let fees = 0n; const alloc = () => (S.free.length ? S.free.shift() : S.next++);
-  for (const tx of txs) { for (const x of tx.inputs) { delete S.slots[x.slot]; S.free.push(x.slot); writes.push(x.slot); } for (const o of tx.outputs) { const i = alloc(); S.slots[i] = { amount: o.amount, cid: ++S.alloc, owner: o.owner }; writes.push(i); o.slot = i; } fees += BigInt(tx.fee) - BigInt(tx.burn); S.free.sort((a, b) => a - b); }
+  for (const tx of txs) { for (const x of tx.inputs) { if (tx.kind === 'op') x.amount = (S.slots[x.slot] || {}).amount || '0'; delete S.slots[x.slot]; S.free.push(x.slot); writes.push(x.slot); } if (tx.kind === 'op') { runOp(tx, S, D, alloc, writes); fees += BigInt(tx.fee); S.free.sort((a, b) => a - b); continue; } for (const o of tx.outputs) { const i = alloc(); S.slots[i] = { amount: o.amount, cid: ++S.alloc, owner: o.owner }; writes.push(i); o.slot = i; } fees += BigInt(tx.fee) - BigInt(tx.burn); S.free.sort((a, b) => a - b); }
   const cb = alloc(); S.slots[cb] = { amount: (REWARD + fees).toString(), cid: ++S.alloc, owner: minerHex, coinbase: 1 }; writes.push(cb);
   return { S, writes, fees, cb }; }
 function stateRootAfter(S, writes) { // compute root with a scratch overlay, without touching the cache
@@ -76,9 +95,9 @@ function submitBlock(id, nonceHex) { const tp = templates.get(+id); if (!tp) ret
   if (tp.txs.some((x) => !mempool.includes(x))) return { error: 'stale template' };
   const { writes, fees, cb } = applyTxs(tp.txs, h.miner_hex, false); for (const w of new Set(writes)) setLeaf(w, C.slots[w]);
   if (root() !== h.state_root) console.error('state root mismatch at', h.height);
-  h.hash = toHex(T.blockId(h)); h.pow = toHex(d); h.miner = k1(h.miner_hex); h.txs = tp.txs.map((x) => ({ id: x.id, inputs: x.inputs.map((i) => ({ slot: i.slot, owner: k1(i.owner) })), outputs: x.outputs.map((o) => ({ slot: o.slot, owner: k1(o.owner), amount: o.amount })), fee: x.fee, burn: x.burn }));
+  h.hash = toHex(T.blockId(h)); h.pow = toHex(d); h.miner = k1(h.miner_hex); h.txs = tp.txs.map((x) => ({ id: x.id, inputs: x.inputs.map((i) => ({ slot: i.slot, owner: k1(i.owner) })), outputs: x.outputs.map((o) => ({ slot: o.slot, owner: k1(o.owner), amount: o.amount })), fee: x.fee, burn: x.burn, ...(x.kind === 'op' ? { kind: 'op', op: x.op, result: x.result } : {}) }));
   h.reward = (REWARD + fees).toString(); h.coinbase_slot = cb;
-  for (const x of tp.txs) { for (const i of x.inputs) C.revealed[i.owner] = 1; C.txIndex[x.id] = h.height; C.burned = (BigInt(C.burned) + BigInt(x.burn)).toString(); }
+  for (const x of tp.txs) { for (const i of x.inputs) C.revealed[i.owner] = 1; C.txIndex[x.id] = h.height; C.burned = (BigInt(C.burned) + BigInt(x.burn) + BigInt((x.result && x.result.burned) || 0)).toString(); }
   mempool = mempool.filter((x) => !tp.txs.includes(x)); C.blocks.push(h); templates.clear(); dirty = true; return { ok: true, height: h.height, hash: h.hash }; }
 // ---------- genesis + house miner (keeps blocks flowing, funds the faucet) ----------
 const houseAddr = (i) => K.address(C.house, i);
@@ -114,5 +133,10 @@ function miners() { const house = new Set(Array.from({ length: C.houseIdx + 2 },
 function address(a) { let hex; try { hex = addrHex(a); } catch { return null; } const coins = bal(hex), txs = [];
   for (let i = C.blocks.length - 1; i >= 0 && txs.length < 25; i--) { const b = C.blocks[i]; if (b.miner === a) txs.push({ height: b.height, kind: 'mined', amount: b.reward, ts: b.timestamp }); for (const t of b.txs) { const inn = t.inputs.some((x) => x.owner === a), out = t.outputs.filter((o) => o.owner === a); if (inn || out.length) txs.push({ height: b.height, kind: inn ? 'sent' : 'received', txid: t.id, amount: out.reduce((s, o) => s + BigInt(o.amount), 0n).toString(), ts: b.timestamp }); } }
   return { address: a, retired: !!C.revealed[hex], balance: coins.reduce((s, c) => s + BigInt(c.amount), 0n).toString(), coins, history: txs, pending: mempool.filter((m) => m.outputs.some((o) => o.owner === hex) || m.inputs.some((x) => x.owner === hex)).length }; }
-module.exports = { template, submitBlock, submitTx, faucet, summary, miners, address, minFee: (i, o) => minFee(i, o).min.toString(),
+function assets() { return Object.values(C.dex.assets).map((a) => DEX.view(C.dex, a)).sort((a, b) => b.created - a.created); }
+function asset(id) { const a = C.dex.assets[id] || Object.values(C.dex.assets).find((x) => x.ticker === String(id).toUpperCase()); if (!a) return null; const v = DEX.view(C.dex, a);
+  v.holdersTop = Object.entries(C.dex.bal[a.id] || {}).map(([o, b]) => ({ owner: k1(o), bal: b })).sort((x, y) => (BigInt(y.bal) > BigInt(x.bal) ? 1 : -1)).slice(0, 15); v.recent = (C.dex.trades[a.id] || []).slice(-60).reverse(); v.candles = candles(C.dex.trades[a.id] || []); v.creator = k1(a.creator); return v; }
+function candles(tr, step = 300) { const m = new Map(); for (const t of tr) { const k = Math.floor(t.ts / step) * step; const c = m.get(k) || { t: k, o: t.price, h: t.price, l: t.price, c: t.price, v: 0 }; c.h = Math.max(c.h, t.price); c.l = Math.min(c.l, t.price); c.c = t.price; c.v += Number(t.kai) / 1e6; m.set(k, c); } return [...m.values()].slice(-96); }
+function holdings(k1a) { let hex; try { hex = addrHex(k1a); } catch { return null; } return Object.keys(C.dex.bal).filter((id) => C.dex.bal[id][hex]).map((id) => ({ id, ticker: C.dex.assets[id].ticker, name: C.dex.assets[id].name, color: C.dex.assets[id].color, bal: C.dex.bal[id][hex], price: DEX.view(C.dex, C.dex.assets[id]).price, lp: C.dex.assets[id].pool ? C.dex.assets[id].pool.lps[hex] || null : null })); }
+module.exports = { submitOp, assets, asset, holdings, template, submitBlock, submitTx, faucet, summary, miners, address, minFee: (i, o) => minFee(i, o).min.toString(),
   block: (h) => { const b = C.blocks[h]; return b ? { header: pub(b), transactions: b.txs } : null }, tx: (id) => { const h = C.txIndex[id]; if (h == null) { const m = mempool.find((x) => x.id === id); return m ? { pending: true, id } : null; } return { height: h, ...C.blocks[h].txs.find((t) => t.id === id) }; } };
