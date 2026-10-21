@@ -73,6 +73,16 @@ const K2 = {
       ['Quantum-safe', '✗', '✗', '✓ hash-based']];
     return '<div style="position:absolute;left:130px;right:130px;top:370px">' + [cols, ...rows].map((r, i) => '<div style="display:grid;grid-template-columns:430px repeat(3,1fr);align-items:center;' + (i ? 'border-bottom:2px solid ' + LINE + ';min-height:74px' : 'border-bottom:3px solid ' + G + ';padding-bottom:16px') + '">' + r.map((c, j) => '<div style="text-align:' + (j ? 'center' : 'left') + ';font-size:' + (i ? 26 : 30) + 'px;padding:0 10px;' + (!i ? 'font-weight:800;letter-spacing:-.02em;' : '') + (j === 3 ? 'background:rgba(255,195,90,' + (i ? .08 : .14) + ');padding:' + (i ? 22 : 14) + 'px 10px;color:' + (i ? '#f4f1ea' : G) + ';' + (i ? 'font-weight:600' : 'border-radius:16px 16px 0 0') : 'color:' + (i && j ? MU : '#f4f1ea')) + '">' + c + '</div>').join('') + '</div>').join('') +
       '<div class="m" style="font-size:16px;color:' + DIM + ';margin-top:18px">Live on the Kairos web testnet with test KAIROS. Proof-native settlement arrives with the node testnet and mainnet.</div></div>'; })()),
+  'kairos-g13-convergence': frame('where the industry is heading', 'Everyone is moving here. <span class="r">Kairos starts here.</span>', (() => {
+    const RM = '<span style="color:' + G + ';font-weight:700">roadmap</span>', cols = ['', 'Zcash', 'Ethereum', 'Solana', 'Kairos'], rows = [
+      ['Validity proof carried in every block', RM, RM, no, yes],
+      ['New node verifies without replaying history', no, no, no, yes],
+      ['Old history pruned without trusting a snapshot', RM, RM, no, yes],
+      ['No signatures, no exposed public keys', no, no, no, yes],
+      ['Hash-based, no elliptic curves', no, no, no, yes],
+      ['No trusted setup', yes, mid, yes, yes]];
+    return '<div style="position:absolute;left:130px;right:130px;top:380px">' + [cols, ...rows].map((r, i) => '<div style="display:grid;grid-template-columns:720px repeat(4,1fr);align-items:center;' + (i ? 'border-bottom:2px solid ' + LINE + ';min-height:92px' : 'border-bottom:3px solid ' + G + ';padding-bottom:16px') + '">' + r.map((c, j) => '<div style="text-align:' + (j ? 'center' : 'left') + ';font-size:' + (i ? (j ? 34 : 29) : 34) + 'px;' + (!i ? 'font-weight:800;letter-spacing:-.02em;' : '') + (j === 4 ? 'background:rgba(255,195,90,' + (i ? .08 : .14) + ');padding:' + (i ? 26 : 14) + 'px 0;color:' + G + ';' + (i ? '' : 'border-radius:16px 16px 0 0') : 'color:' + (i && !j ? '#f4f1ea' : i ? MU : '#f4f1ea')) + '">' + c + '</div>').join('') + '</div>').join('') +
+      '<div class="m" style="font-size:16px;color:' + DIM + ';margin-top:18px">Roadmap = proposed or in research: Zcash Tachyon (proof-carrying data), Ethereum mandatory execution proofs and history expiry. Ethereum KZG used a public setup ceremony.</div></div>'; })()),
 };
 (async () => { const want = process.argv.slice(2); let port = 9960;
   for (const [n, body] of Object.entries(K2)) { if (want.length && !want.includes(n)) continue; const f = path.join(SRC, n + '.html'); fs.writeFileSync(f, '<!doctype html><meta charset="utf-8">' + BASE + body);
