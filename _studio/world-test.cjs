@@ -1,0 +1,10 @@
+const { open, sleep } = require('./cdp.cjs');
+(async () => { const P = 'http://localhost:8267/world';
+  const b = await open('about:blank', 1280, 760, 9898); await b.send('Page.navigate', { url: P }); await sleep(2500);
+  await b.ev("localStorage.clear();$('nm').value='nova';SUIT='#79adff';board();1"); await sleep(3000); await b.ev("me.x=700;me.y=470;1");
+  const a = await open('about:blank', 1440, 900, 9899); await a.send('Page.navigate', { url: P }); await sleep(2500);
+  await a.ev("$('nm').value='kairos-dev';board();1"); await sleep(3500); await a.ev("me.x=780;me.y=520;1"); await sleep(800);
+  await b.ev("api('/api/world/chat',{id:ME,text:'gm crew, proofs only'});1"); await sleep(600); await a.ev("api('/api/world/chat',{id:ME,text:'mining bay is open'});1"); await sleep(1500);
+  console.log(await a.ev("players.length+' players, chat: '+document.getElementById('msgs').innerText.split('\n').slice(-4).join(' | ')"));
+  await a.shot(process.argv[2]); await a.ev("me.x=280;me.y=250;1"); await sleep(1500); await a.ev("use();1"); await sleep(4000); await a.shot(process.argv[3]); console.log(await a.ev("document.getElementById('hint').textContent"));
+  a.close(); b.close(); process.exit(0); })();

@@ -1,0 +1,123 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAIROS STATION · a proof-native world</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/k.css">
+<meta name="description" content="A multiplayer world on the Kairos testnet with a built-in non-custodial wallet, real test-KAIROS payments between players, a mining bay and a live network terminal.">
+<meta property="og:title" content="KAIROS STATION: the first proof-native world"><meta property="og:image" content="/og.png">
+<style>
+html,body{height:100%;overflow:hidden}body{background:#04050a}#cv{position:fixed;inset:0;width:100vw;height:100vh;display:block}
+.hud{position:fixed;z-index:20;border:1px solid var(--line2);background:rgba(6,8,14,.82);backdrop-filter:blur(14px);border-radius:16px}
+#top{left:16px;top:16px;right:16px;height:58px;display:flex;align-items:center;gap:14px;padding:0 10px 0 18px}#top .logo{font-size:18px}#top .pill{font-family:'Geist Mono';font-size:12px;letter-spacing:.1em;padding:7px 12px;border:1px solid var(--line2);border-radius:9px;color:var(--mu)}#top .pill b{color:var(--fg);font-weight:500}
+#chat{left:16px;bottom:16px;width:380px;height:300px;display:flex;flex-direction:column}#msgs{flex:1;overflow:auto;padding:12px 14px;font-size:13.5px;line-height:1.45}#msgs div{margin-bottom:6px}#msgs .sys{color:var(--dim);font-family:'Geist Mono';font-size:12px}#msgs .pay{color:#7dffb2;font-family:'Geist Mono';font-size:12px}
+#ci{border:0;border-top:1px solid var(--line);background:none;color:var(--fg);padding:12px 14px;font-family:inherit;font-size:14px;outline:none;border-radius:0 0 16px 16px}
+#help{right:16px;bottom:16px;padding:12px 16px;font-family:'Geist Mono';font-size:11.5px;color:var(--mu);line-height:1.8}#help b{color:var(--gold);font-weight:500}
+#hint{left:50%;bottom:28px;transform:translateX(-50%);padding:10px 18px;font-family:'Geist Mono';font-size:13px;color:var(--gold);display:none}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(4,5,10,.7);backdrop-filter:blur(6px);display:grid;place-items:center}.modal.off{display:none}
+.mc{width:min(480px,92vw);border:1px solid var(--line2);border-radius:22px;background:#0b0e17;padding:28px}.mc h2{font-weight:800;letter-spacing:-.04em;font-size:34px;line-height:1}.mc p{color:var(--mu);font-size:14px;margin-top:10px}
+.in{width:100%;height:46px;border-radius:12px;border:1px solid var(--line2);background:rgba(4,5,10,.6);color:var(--fg);font-family:'Geist Mono';font-size:14px;padding:0 14px;outline:none;margin-top:8px}.in:focus{border-color:var(--gold)}
+.lb{font-family:'Geist Mono';font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-top:16px}
+.suits{display:flex;gap:8px;margin-top:8px}.suits i{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent}.suits i.on{border-color:#fff}
+.seg{display:flex;gap:8px;margin-top:8px}.seg button{flex:1;height:40px;border-radius:10px;border:1px solid var(--line2);background:none;color:var(--mu);font-family:'Geist Mono';font-size:11.5px;letter-spacing:.1em;cursor:pointer}.seg button.on{border-color:var(--gold);color:var(--gold)}
+#net{right:16px;top:90px;width:360px;padding:16px;display:none}#net .rw{display:flex;justify-content:space-between;font-family:'Geist Mono';font-size:12px;padding:6px 0;border-bottom:1px solid var(--line)}#net .rw b{color:var(--gold);font-weight:500}
+@media(max-width:800px){#chat{width:calc(100% - 32px);height:190px}#help{display:none}#top .pill.h{display:none}}
+</style></head><body>
+<canvas id="cv"></canvas>
+<div class="hud" id="top"><a class="logo" href="/" style="display:flex;gap:10px;align-items:center"><span id="lg" style="width:28px;height:28px;display:inline-block"></span>KAIROS STATION</a><div style="flex:1"></div>
+ <span class="pill h">CREW <b id="crew">0</b></span><span class="pill h">BLOCK <b id="blk">—</b></span><span class="pill">WALLET <b id="bal">—</b> KAIROS</span><button class="btn" style="height:38px" onclick="drip()">Faucet</button><button class="btn" style="height:38px" onclick="toggleNet()">Network</button></div>
+<div class="hud" id="chat"><div id="msgs"></div><input id="ci" maxlength="200" placeholder="Press T to talk to the ship"></div>
+<div class="hud" id="help"><b>WASD</b> / click to move · <b>T</b> chat · <b>E</b> use<br>click a crew member to send KAIROS</div>
+<div class="hud" id="hint"></div>
+<div class="hud" id="net"><div class="lb" style="margin-top:0">live network · web testnet</div><div id="netb" style="margin-top:8px"></div></div>
+<div class="modal" id="board"><div class="mc"><div class="eyebrow"><b>●</b> crew boarding</div><h2 style="margin-top:12px">Board <span style="background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent">the station.</span></h2>
+ <p>A multiplayer world on the Kairos testnet. Your wallet is created and kept in this browser; nobody else ever holds your key.</p>
+ <div class="lb">Your callsign</div><input class="in" id="nm" maxlength="16" placeholder="callsign">
+ <div class="lb">Pick your suit</div><div class="suits" id="suits"></div>
+ <div class="lb">Wallet</div><div class="seg" id="wseg"></div><input class="in" id="imp" placeholder="paste your 64-hex master secret" style="display:none">
+ <button class="btn pri" style="width:100%;justify-content:center;height:50px;margin-top:20px" onclick="board()">Create wallet &amp; board →</button><p id="bm" style="color:#ff8b80"></p></div></div>
+<div class="modal off" id="payM"><div class="mc"><div class="eyebrow"><b>●</b> send test KAIROS</div><h2 style="margin-top:12px" id="payT">to crew</h2><p id="payA" class="mono" style="font-size:12px;word-break:break-all"></p>
+ <div class="lb">Amount</div><input class="in" id="payV" inputmode="decimal" value="1"><div style="display:flex;gap:8px;margin-top:16px"><button class="btn pri" style="flex:1;justify-content:center" onclick="pay()">Prove &amp; send</button><button class="btn" onclick="$('payM').classList.add('off')">Cancel</button></div><p id="payR"></p></div></div>
+<script src="/k.js"></script><script src="/kairos-keys.js"></script><script>
+$('lg').innerHTML = MARK; const KK = window.KairosKeys, f6 = (u) => (Number(u) / 1e6).toLocaleString(undefined, { maximumFractionDigits: 4 });
+const api = async (p, b) => { const r = await fetch(p, b ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) } : {}); return r.json().catch(() => ({})); };
+const SUITS = ['#ffc35a', '#79adff', '#7dffb2', '#ff8a3d', '#ff5d4f', '#c58bff', '#f4f1ea']; let SUIT = SUITS[Math.floor(Math.random() * SUITS.length)], WMODE = 'device';
+let M = null; try { M = localStorage.getItem('kai_master'); } catch {}
+$('suits').innerHTML = SUITS.map((c) => `<i style="background:${c}" data-c="${c}" class="${c === SUIT ? 'on' : ''}"></i>`).join(''); $('suits').onclick = (e) => { if (e.target.dataset.c) { SUIT = e.target.dataset.c; [...$('suits').children].forEach((i) => i.classList.toggle('on', i.dataset.c === SUIT)); } };
+function wseg() { const opts = M ? [['device', 'Use my wallet'], ['new', 'New wallet'], ['import', 'Import key']] : [['new', 'New wallet'], ['import', 'Import key']]; if (!M && WMODE === 'device') WMODE = 'new';
+  $('wseg').innerHTML = opts.map(([k, l]) => `<button class="${WMODE === k ? 'on' : ''}" onclick="WMODE='${k}';wseg()">${l}</button>`).join(''); $('imp').style.display = WMODE === 'import' ? 'block' : 'none'; } wseg();
+try { $('nm').value = localStorage.getItem('kai_name') || ''; } catch {}
+// ---------- wallet (same one-time-address model as /wallet) ----------
+let ACC = [];
+async function scan() { if (!M) return; const out = []; let gap = 0; for (let i = 0; i < 60 && gap < 3; i++) { const a = KK.address(M, i), r = await api('/api/tn/address/' + a); const used = !!(r.retired || (r.history && r.history.length) || r.pending); out.push({ i, a, bal: BigInt(r.balance || 0), coins: r.coins || [], retired: r.retired, used, pending: r.pending }); gap = used ? 0 : gap + 1; }
+  ACC = out; $('bal').textContent = f6(out.reduce((s, x) => s + x.bal, 0n)); }
+const fresh = () => KK.address(M, ACC.reduce((m, x) => (x.used ? x.i : m), -1) + 1);
+async function drip() { const r = await api('/api/tn/faucet', { to: fresh() }); sys(r.error ? r.error : 'Faucet sent 25 test KAIROS. It lands in the next block.'); setTimeout(scan, 4000); }
+async function sendTo(to, amt) { const fee8 = BigInt((await api('/api/tn/fee?in=8&out=2')).min), src = ACC.find((x) => !x.retired && !x.pending && x.coins.length && x.coins.slice(0, 8).reduce((t, c) => t + BigInt(c.amount), 0n) >= amt + fee8);
+  if (!src) return { error: 'Not enough KAIROS on one address yet. Use the faucet or the mining bay.' };
+  const coins = src.coins.slice(0, 8), sum = coins.reduce((t, c) => t + BigInt(c.amount), 0n), f = BigInt((await api('/api/tn/fee?in=' + coins.length + '&out=2')).min), change = sum - amt - f, outs = [{ to, amount: amt.toString() }];
+  if (change > 0n) outs.push({ to: fresh(), amount: change.toString() }); return api('/api/tn/tx', { inputs: coins.map((c) => ({ slot: c.slot, secret: KK.spendSecret(M, src.i) })), outputs: outs, fee: (change > 0n ? f : sum - amt).toString() }); }
+// ---------- boarding ----------
+let ME = null, W = 1600, H = 1000, me = { x: 800, y: 540 }, target = null, players = [];
+async function board() { const name = $('nm').value.trim() || 'crew'; if (WMODE === 'new') { M = KK.randomMaster(); } else if (WMODE === 'import') { const v = $('imp').value.trim().toLowerCase(); if (!/^[0-9a-f]{64}$/.test(v)) { $('bm').textContent = 'A master secret is 64 hex characters.'; return; } M = v; }
+  try { localStorage.setItem('kai_master', M); localStorage.setItem('kai_name', name); } catch {}
+  await scan(); const r = await api('/api/world/join', { name, color: SUIT, addr: fresh() }); if (!r.id) { $('bm').textContent = 'Could not board. Try again.'; return; }
+  ME = r.id; W = r.w; H = r.h; $('board').classList.add('off'); stream(); setInterval(() => { if (ME) api('/api/world/move', { id: ME, x: Math.round(me.x), y: Math.round(me.y), addr: ACC.length ? fresh() : undefined }); }, 160); setInterval(scan, 15000); }
+// ---------- realtime ----------
+const msgs = $('msgs'); function addMsg(m) { const d = document.createElement('div'); d.className = m.kind === 'sys' ? 'sys' : m.kind === 'pay' ? 'pay' : ''; d.innerHTML = m.kind === 'chat' ? `<b style="color:${m.color}">${esc(m.from)}</b> ${esc(m.text)}` : esc(m.text); msgs.append(d); msgs.scrollTop = 1e9; }
+const sys = (t) => addMsg({ kind: 'sys', text: t }); const esc = (s) => String(s).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+function stream() { const es = new EventSource('/api/world/stream'); es.addEventListener('hello', (e) => { const d = JSON.parse(e.data); d.chat.forEach(addMsg); });
+  es.addEventListener('state', (e) => { players = JSON.parse(e.data); $('crew').textContent = players.length; }); es.addEventListener('chat', (e) => addMsg(JSON.parse(e.data))); }
+$('ci').onkeydown = async (e) => { if (e.key === 'Enter') { const t = $('ci').value.trim(); if (t && ME) await api('/api/world/chat', { id: ME, text: t }); $('ci').value = ''; $('ci').blur(); } if (e.key === 'Escape') $('ci').blur(); };
+// ---------- station layout ----------
+const ZONES = [{ id: 'hall', name: 'CENTRAL HALL', x: 560, y: 360, w: 480, h: 320, c: '#ffc35a' }, { id: 'mine', name: 'MINING BAY', x: 120, y: 120, w: 340, h: 260, c: '#7dffb2', act: 'E · start mining' }, { id: 'pad', name: 'LAUNCHPAD DOCK', x: 1140, y: 120, w: 340, h: 260, c: '#ff8a3d', act: 'E · open the launchpad' },
+  { id: 'net', name: 'NETWORK TERMINAL', x: 120, y: 620, w: 340, h: 260, c: '#79adff', act: 'E · read the live chain' }, { id: 'vault', name: 'VERIFY ROOM', x: 1140, y: 620, w: 340, h: 260, c: '#c58bff', act: 'E · verify the chain' }];
+const zoneAt = (x, y) => ZONES.find((z) => x > z.x && x < z.x + z.w && y > z.y && y < z.y + z.h);
+// ---------- input ----------
+const keys = {}; addEventListener('keydown', (e) => { if (document.activeElement === $('ci') || !$('board').classList.contains('off')) return; keys[e.key.toLowerCase()] = 1; if (e.key.toLowerCase() === 't') { e.preventDefault(); $('ci').focus(); } if (e.key.toLowerCase() === 'e') use(); });
+addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = 0; });
+const cv = $('cv'), g = cv.getContext('2d'); let cam = { x: 0, y: 0 }, sc = 1;
+cv.onclick = (e) => { if (!ME) return; const wx = (e.clientX - innerWidth / 2) / sc + cam.x, wy = (e.clientY - innerHeight / 2) / sc + cam.y;
+  const hit = players.find((p) => p.id !== ME && Math.hypot(p.x - wx, p.y - wy) < 26); if (hit) return openPay(hit); target = { x: wx, y: wy }; };
+let MINING = null, mined = 0;
+function use() { const z = zoneAt(me.x, me.y); if (!z) return; if (z.id === 'pad') open('/launchpad', '_blank'); if (z.id === 'vault') open('/verify', '_blank'); if (z.id === 'net') toggleNet(true);
+  if (z.id === 'mine') { if (MINING) { MINING.forEach((w) => w.terminate()); MINING = null; sys('Mining stopped.'); return; } startMining(); } }
+async function startMining() { const to = fresh(); MINING = [new Worker('/tn-miner.js'), new Worker('/tn-miner.js')]; sys('Mining bay: hashing Kairos proof of work to your wallet…'); api('/api/world/event', { id: ME, text: 'started mining in the bay' });
+  let tpl; const work = async () => { if (!MINING) return; tpl = await api('/api/tn/template?miner=' + to); if (!tpl.header) return; MINING.forEach((w, i) => w.postMessage({ header: tpl.header, id: tpl.id, start: Math.floor(Math.random() * 2 ** 48) + i * 2 ** 40 })); };
+  MINING.forEach((w) => (w.onmessage = async (e) => { if (e.data.found && tpl && e.data.id === tpl.id) { const r = await api('/api/tn/submit', { id: tpl.id, nonce: e.data.found }); if (r.ok) { mined++; api('/api/world/event', { id: ME, text: `mined block #${r.height} (+16 KAIROS)` }); setTimeout(scan, 3000); } work(); } }));
+  work(); const iv = setInterval(() => { if (!MINING) return clearInterval(iv); work(); }, 25000); }
+let PAYTO = null; function openPay(p) { if (!p.addr) return sys(p.name + ' has no wallet address yet.'); PAYTO = p; $('payT').innerHTML = 'to <span style="color:' + p.color + '">' + esc(p.name) + '</span>'; $('payA').textContent = p.addr; $('payR').textContent = ''; $('payM').classList.remove('off'); }
+async function pay() { const v = BigInt(Math.round((parseFloat($('payV').value) || 0) * 1e6)); if (v <= 0n) return; $('payR').textContent = 'Proving and sending…'; const r = await sendTo(PAYTO.addr, v);
+  if (r.error) { $('payR').textContent = r.error; return; } $('payM').classList.add('off'); api('/api/world/paid', { id: ME, to: PAYTO.id, amount: f6(v), txid: r.txid }); setTimeout(scan, 4000); }
+async function toggleNet(force) { const n = $('net'); n.style.display = force || n.style.display !== 'block' ? 'block' : 'none'; if (n.style.display === 'block') netTick(); }
+async function netTick() { const s = await api('/api/explorer/summary'); if (!s.online) return; $('blk').textContent = s.height.toLocaleString(); if ($('net').style.display !== 'block') return;
+  $('netb').innerHTML = `<div class="rw"><span>height</span><b>${s.height.toLocaleString()}</b></div><div class="rw"><span>avg block</span><b>${(s.avgBlockSec || 0).toFixed(1)} s</b></div><div class="rw"><span>live outputs</span><b>${s.activeSlots}</b></div><div class="rw"><span>KAIROS burned</span><b>${f6(s.burned)}</b></div>` + s.recent.slice(0, 6).map((b) => `<div class="rw"><span>#${b.height}</span><span>${b.miner.slice(0, 10)}…</span></div>`).join(''); }
+setInterval(netTick, 5000); netTick();
+// ---------- render ----------
+const stars = Array.from({ length: 260 }, () => [Math.random() * 3000 - 700, Math.random() * 2200 - 600, Math.random()]);
+function frame(t) { const dpr = Math.min(2, devicePixelRatio || 1); if (cv.width !== innerWidth * dpr) { cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; } g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  sc = Math.min(1.2, Math.max(.6, innerWidth / 1500));
+  if (ME) { let dx = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0), dy = (keys.s || keys.arrowdown ? 1 : 0) - (keys.w || keys.arrowup ? 1 : 0); if (dx || dy) target = null; else if (target) { const vx = target.x - me.x, vy = target.y - me.y, d = Math.hypot(vx, vy); if (d < 4) target = null; else { dx = vx / d; dy = vy / d; } }
+    const l = Math.hypot(dx, dy) || 1; me.x = Math.max(40, Math.min(W - 40, me.x + dx / l * 4.2)); me.y = Math.max(40, Math.min(H - 40, me.y + dy / l * 4.2)); }
+  cam.x += (me.x - cam.x) * .12; cam.y += (me.y - cam.y) * .12;
+  g.fillStyle = '#04050a'; g.fillRect(0, 0, innerWidth, innerHeight);
+  for (const [x, y, z] of stars) { const sx = (x - cam.x * (.2 + z * .2)) % innerWidth, sy = (y - cam.y * (.2 + z * .2)) % innerHeight; g.fillStyle = `rgba(244,241,234,${.15 + z * .4})`; g.fillRect((sx + innerWidth) % innerWidth, (sy + innerHeight) % innerHeight, 1 + z, 1 + z); }
+  g.save(); g.translate(innerWidth / 2, innerHeight / 2); g.scale(sc, sc); g.translate(-cam.x, -cam.y);
+  // hull
+  g.fillStyle = '#0a0d16'; g.strokeStyle = 'rgba(244,241,234,.18)'; g.lineWidth = 3; g.beginPath(); g.roundRect(40, 40, W - 80, H - 80, 60); g.fill(); g.stroke();
+  g.strokeStyle = 'rgba(244,241,234,.04)'; g.lineWidth = 1; for (let x = 80; x < W - 60; x += 40) { g.beginPath(); g.moveTo(x, 60); g.lineTo(x, H - 60); g.stroke(); } for (let y = 80; y < H - 60; y += 40) { g.beginPath(); g.moveTo(60, y); g.lineTo(W - 60, y); g.stroke(); }
+  // corridors
+  g.strokeStyle = 'rgba(255,195,90,.12)'; g.lineWidth = 50; g.beginPath(); for (const z of ZONES.slice(1)) { g.moveTo(800, 520); g.lineTo(z.x + z.w / 2, z.y + z.h / 2); } g.stroke();
+  for (const z of ZONES) { g.fillStyle = z.c + '12'; g.strokeStyle = z.c + '88'; g.lineWidth = 2; g.beginPath(); g.roundRect(z.x, z.y, z.w, z.h, 26); g.fill(); g.stroke(); g.fillStyle = z.c; g.font = '600 15px Geist Mono'; g.textAlign = 'left'; g.fillText(z.name, z.x + 20, z.y + 30);
+    if (z.id === 'hall') { for (let k = 0; k < 4; k++) { g.strokeStyle = `rgba(255,195,90,${.25 - k * .05})`; g.lineWidth = 2; g.beginPath(); g.arc(800, 520, 50 + k * 26, 0, 7); g.stroke(); } const a = t / 900; g.strokeStyle = '#ffc35a'; g.lineWidth = 3; g.beginPath(); g.moveTo(800, 520); g.lineTo(800 + 128 * Math.cos(a), 520 + 128 * Math.sin(a)); g.stroke(); }
+    if (z.id === 'mine') { for (let k = 0; k < 6; k++) { const on = MINING && (Math.floor(t / 120) + k) % 3 === 0; g.fillStyle = on ? '#7dffb2' : 'rgba(125,255,178,.15)'; g.fillRect(z.x + 30 + k * 48, z.y + 160, 34, 60); } }
+    if (z.id === 'net') { for (let k = 0; k < 7; k++) { g.fillStyle = 'rgba(121,173,255,' + (.15 + ((k + Math.floor(t / 600)) % 7 === 0 ? .6 : 0)) + ')'; g.fillRect(z.x + 30 + k * 42, z.y + 120, 30, 90); } }
+    if (z.id === 'pad') { for (let k = 0; k < 3; k++) { g.beginPath(); g.arc(z.x + 90 + k * 80, z.y + 160, 26, 0, 7); g.fillStyle = ['#ff8a3d', '#79adff', '#7dffb2'][k] + '44'; g.fill(); g.strokeStyle = ['#ff8a3d', '#79adff', '#7dffb2'][k]; g.stroke(); } }
+    if (z.id === 'vault') { g.strokeStyle = '#c58bff'; g.lineWidth = 3; g.beginPath(); g.arc(z.x + z.w / 2, z.y + 160, 50, 0, 7); g.stroke(); g.beginPath(); g.moveTo(z.x + z.w / 2 - 20, z.y + 160); g.lineTo(z.x + z.w / 2 - 4, z.y + 176); g.lineTo(z.x + z.w / 2 + 24, z.y + 146); g.stroke(); } }
+  // players
+  const list = players.filter((p) => p.id !== ME).concat(ME ? [{ id: ME, name: $('nm').value.trim() || 'you', color: SUIT, x: me.x, y: me.y, emote: (players.find((p) => p.id === ME) || {}).emote }] : []);
+  for (const p of list) { const mine = p.id === ME, x = mine ? me.x : p.x, y = mine ? me.y : p.y; g.fillStyle = 'rgba(0,0,0,.4)'; g.beginPath(); g.ellipse(x, y + 22, 18, 6, 0, 0, 7); g.fill();
+    g.fillStyle = p.color; g.beginPath(); g.roundRect(x - 15, y - 10, 30, 32, 10); g.fill(); g.beginPath(); g.arc(x, y - 16, 15, 0, 7); g.fill(); g.fillStyle = '#0b0e17'; g.beginPath(); g.roundRect(x - 10, y - 22, 20, 11, 5); g.fill(); g.fillStyle = 'rgba(121,173,255,.7)'; g.fillRect(x - 7, y - 20, 9, 3);
+    g.fillStyle = mine ? '#ffc35a' : '#f4f1ea'; g.font = '600 13px Geist'; g.textAlign = 'center'; g.fillText(p.name + (mine ? ' (you)' : ''), x, y - 40);
+    if (p.emote) { g.font = '13px Geist'; const w = g.measureText(p.emote).width + 18; g.fillStyle = 'rgba(244,241,234,.92)'; g.beginPath(); g.roundRect(x - w / 2, y - 78, w, 26, 8); g.fill(); g.fillStyle = '#0b0e17'; g.fillText(p.emote, x, y - 60); } }
+  g.restore();
+  const z = ME && zoneAt(me.x, me.y), h = $('hint'); if (z && z.act) { h.style.display = 'block'; h.textContent = z.name + ' · ' + (z.id === 'mine' && MINING ? 'E · stop mining (' + mined + ' blocks)' : z.act); } else h.style.display = 'none';
+  requestAnimationFrame(frame); }
+requestAnimationFrame(frame);
+</script></body></html>
