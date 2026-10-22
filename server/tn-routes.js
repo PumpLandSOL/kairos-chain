@@ -18,6 +18,7 @@ async function testnetRoute(p, u, send, req, body) { const t = tn(), ip = String
     if (p === '/api/tn/fee') return send(200, { min: t.minFee(+u.searchParams.get('in') || 1, +u.searchParams.get('out') || 2) }), true;
     if ((m = p.match(/^\/api\/tn\/address\/(.+)$/)) && K1.test(m[1])) { const a = t.address(m[1]); return send(a ? 200 : 400, a || { error: 'bad address' }), true; }
     if (p === '/api/tn/headers') return send(200, t.headers(+u.searchParams.get('from') || 0, +u.searchParams.get('to') || 0)), true;
+    if (p === '/api/tn/season') return send(200, require('./season.js').season(t, u.searchParams.get('addr') || '')), true;
     if (p === '/api/tn/names') return send(200, { names: t.names({ owner: u.searchParams.get('owner') || '' }) }), true;
     if (p.startsWith('/api/tn/name/')) { const n = t.resolve(decodeURIComponent(p.slice(13))); return send(n ? 200 : 404, n || { error: 'name not registered' }), true; }
     if (p === '/api/tn/nfts') return send(200, { nfts: t.nfts({ owner: u.searchParams.get('owner') || '', listed: u.searchParams.get('listed') === '1' }) }), true;
